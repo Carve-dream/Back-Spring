@@ -6,10 +6,7 @@ import com.capstone.Carvedream.domain.auth.dto.*;
 import com.capstone.Carvedream.domain.user.domain.Role;
 import com.capstone.Carvedream.domain.user.domain.User;
 import com.capstone.Carvedream.domain.user.domain.repository.UserRepository;
-import com.capstone.Carvedream.domain.user.exception.InvalidUserException;
 import com.capstone.Carvedream.global.DefaultAssert;
-import com.capstone.Carvedream.global.config.security.token.UserPrincipal;
-import com.capstone.Carvedream.global.payload.CommonDto;
 import com.capstone.Carvedream.global.payload.Message;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -36,6 +33,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final TokenRepository tokenRepository;
 
+    //로그인
     public AuthRes signin(SignInReq signInRequest){
         Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(
@@ -55,6 +53,7 @@ public class AuthService {
         return AuthRes.builder().accessToken(tokenMapping.getAccessToken()).refreshToken(token.getRefreshToken()).build();
     }
 
+    //회원가입
     public Message signup(SignUpReq signUpRequest){
         DefaultAssert.isTrue(!userRepository.existsByEmail(signUpRequest.getEmail()), "해당 이메일이 존재하지 않습니다.");
 
@@ -63,6 +62,8 @@ public class AuthService {
                         .email(signUpRequest.getEmail())
                         .password(passwordEncoder.encode(signUpRequest.getPassword()))
                         .role(Role.ADMIN)
+                        .birthDate(signUpRequest.getBirthDate())
+                        .gender(signUpRequest.getGender())
                         .build();
 
         userRepository.save(user);
@@ -73,6 +74,7 @@ public class AuthService {
         return Message.builder().message("회원가입에 성공하였습니다.").build();
     }
 
+    //토큰 재발급
     public AuthRes refresh(RefreshTokenReq tokenRefreshRequest){
         //1차 검증
         boolean checkValid = valid(tokenRefreshRequest.getRefreshToken());
@@ -98,6 +100,7 @@ public class AuthService {
         return AuthRes.builder().accessToken(tokenMapping.getAccessToken()).refreshToken(updateToken.getRefreshToken()).build();
     }
 
+    //로그아웃
     public Message signout(RefreshTokenReq tokenRefreshRequest){
         boolean checkValid = valid(tokenRefreshRequest.getRefreshToken());
         DefaultAssert.isAuthentication(checkValid);
@@ -108,6 +111,7 @@ public class AuthService {
         return Message.builder().message("로그아웃 하였습니다.").build();
     }
 
+    //유저 확인
     private boolean valid(String refreshToken){
 
         //1. 토큰 형식 물리적 검증

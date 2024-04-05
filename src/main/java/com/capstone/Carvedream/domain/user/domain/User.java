@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Getter
@@ -28,14 +30,21 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
+
+    private LocalDate birthDate;
+
     @Builder
-    public User(Long id, String name, String email, String imageUrl, String password, Role role) {
+    public User(Long id, String name, String email, String imageUrl, String password, Role role, Gender gender, LocalDate birthDate) {
         this.id = id;
         this.name = name;
         this.email = email;
         this.imageUrl = imageUrl;
         this.password = password;
         this.role = role;
+        this.gender = gender;
+        this.birthDate = birthDate;
     }
 
     public void updateName(String name){
