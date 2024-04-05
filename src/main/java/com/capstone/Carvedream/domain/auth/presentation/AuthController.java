@@ -2,11 +2,12 @@ package com.capstone.Carvedream.domain.auth.presentation;
 
 
 import com.capstone.Carvedream.domain.auth.application.AuthService;
-import com.capstone.Carvedream.domain.auth.dto.*;
-import com.capstone.Carvedream.domain.user.domain.User;
+import com.capstone.Carvedream.domain.auth.dto.request.RefreshTokenReq;
+import com.capstone.Carvedream.domain.auth.dto.request.SignInReq;
+import com.capstone.Carvedream.domain.auth.dto.request.SignUpReq;
+import com.capstone.Carvedream.domain.auth.dto.response.AuthRes;
 import com.capstone.Carvedream.global.config.security.token.CurrentUser;
 import com.capstone.Carvedream.global.config.security.token.UserPrincipal;
-import com.capstone.Carvedream.global.payload.CommonDto;
 import com.capstone.Carvedream.global.payload.ErrorResponse;
 import com.capstone.Carvedream.global.payload.Message;
 import io.swagger.v3.oas.annotations.Operation;

@@ -1,4 +1,4 @@
-package com.capstone.Carvedream.domain.auth.dto;
+package com.capstone.Carvedream.domain.auth.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
