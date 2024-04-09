@@ -6,8 +6,6 @@ import com.capstone.Carvedream.domain.auth.dto.request.RefreshTokenReq;
 import com.capstone.Carvedream.domain.auth.dto.request.SignInReq;
 import com.capstone.Carvedream.domain.auth.dto.request.SignUpReq;
 import com.capstone.Carvedream.domain.auth.dto.response.AuthRes;
-import com.capstone.Carvedream.global.config.security.token.CurrentUser;
-import com.capstone.Carvedream.global.config.security.token.UserPrincipal;
 import com.capstone.Carvedream.global.payload.ErrorResponse;
 import com.capstone.Carvedream.global.payload.Message;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Authorization", description = "인증 API")
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 public class AuthController {
 
     private final AuthService authService;
