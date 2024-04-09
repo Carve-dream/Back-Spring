@@ -79,4 +79,16 @@ public class AuthController {
         return ResponseEntity.ok(authService.signout(tokenRefreshRequest));
     }
 
+    @Operation(summary = "유저 탈퇴", description = "유저 정보를 삭제합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "탈퇴 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Message.class) ) } ),
+            @ApiResponse(responseCode = "400", description = "탈퇴 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    })
+    @DeleteMapping(value="/cancel")
+    public ResponseEntity<Message> cancel(
+            @Parameter(description = "Schemas의 RefreshTokenRequest를 참고해주세요.", required = true) @Valid @RequestBody RefreshTokenReq tokenRefreshRequest
+    ) {
+        return ResponseEntity.ok(authService.cancel(tokenRefreshRequest));
+    }
+
 }

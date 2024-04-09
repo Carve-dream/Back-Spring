@@ -19,6 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
@@ -27,6 +28,7 @@ import java.util.Optional;
 
 
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 @Service
 public class AuthService {
 
@@ -38,6 +40,7 @@ public class AuthService {
     private final TokenRepository tokenRepository;
 
     //로그인
+    @Transactional
     public AuthRes signin(SignInReq signInRequest){
         Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(
@@ -58,6 +61,7 @@ public class AuthService {
     }
 
     //회원가입
+    @Transactional
     public Message signup(SignUpReq signUpRequest){
         DefaultAssert.isTrue(!userRepository.existsByEmail(signUpRequest.getEmail()), "해당 이메일이 존재하지 않습니다.");
 
@@ -79,6 +83,7 @@ public class AuthService {
     }
 
     //토큰 재발급
+    @Transactional
     public AuthRes refresh(RefreshTokenReq tokenRefreshRequest){
         //1차 검증
         boolean checkValid = valid(tokenRefreshRequest.getRefreshToken());
@@ -105,6 +110,7 @@ public class AuthService {
     }
 
     //로그아웃
+    @Transactional
     public Message signout(RefreshTokenReq tokenRefreshRequest){
         boolean checkValid = valid(tokenRefreshRequest.getRefreshToken());
         DefaultAssert.isAuthentication(checkValid);
@@ -113,6 +119,18 @@ public class AuthService {
         Optional<Token> token = tokenRepository.findByRefreshToken(tokenRefreshRequest.getRefreshToken());
         tokenRepository.delete(token.get());
         return Message.builder().message("로그아웃 하였습니다.").build();
+    }
+
+    //탈퇴
+    @Transactional
+    public Message cancel(RefreshTokenReq tokenRefreshRequest){
+        boolean checkValid = valid(tokenRefreshRequest.getRefreshToken());
+        DefaultAssert.isAuthentication(checkValid);
+
+        Optional<Token> token = tokenRepository.findByRefreshToken(tokenRefreshRequest.getRefreshToken());
+        userRepository.deleteByEmail(token.get().getUserEmail());
+        tokenRepository.delete(token.get());
+        return Message.builder().message("탈퇴 하였습니다.").build();
     }
 
     //유저 확인
@@ -124,7 +142,7 @@ public class AuthService {
 
         //2. refresh token 값을 불러온다.
         Optional<Token> token = tokenRepository.findByRefreshToken(refreshToken);
-        DefaultAssert.isTrue(token.isPresent(), "탈퇴 처리된 회원입니다.");
+        DefaultAssert.isTrue(token.isPresent(), "로그인이 필요합니다.");
 
         //3. email 값을 통해 인증값을 불러온다
         Authentication authentication = customTokenProviderService.getAuthenticationByEmail(token.get().getUserEmail());
