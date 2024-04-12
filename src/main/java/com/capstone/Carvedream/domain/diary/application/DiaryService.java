@@ -15,10 +15,13 @@ import com.capstone.Carvedream.global.config.security.token.UserPrincipal;
 import com.capstone.Carvedream.global.payload.CommonDto;
 import com.capstone.Carvedream.global.payload.Message;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -105,6 +108,30 @@ public class DiaryService {
                 .start_sleep(diary.getStart_sleep())
                 .interpretation(diary.getInterpretation())
                 .build();
+
+        return new CommonDto(true, findDiaryRes);
+    }
+
+    // 유저의 모든 꿈 일기 조회
+    public CommonDto findAllDiary(UserPrincipal userPrincipal, Integer page) {
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(InvalidUserException::new);
+
+        Page<Diary> diaryPage = diaryRepository.findAllByUser(user, PageRequest.of(page, 10));
+
+
+        List<FindDiaryRes> findDiaryRes = diaryPage.stream().map(
+                diary -> FindDiaryRes.builder()
+                    .id(diary.getId())
+                    .title(diary.getTitle())
+                    .content(diary.getContent())
+                    .date(diary.getDate())
+                    .emotion(diary.getEmotion())
+                    .image_url(diary.getImage_url())
+                    .end_sleep(diary.getEnd_sleep())
+                    .start_sleep(diary.getStart_sleep())
+                    .interpretation(diary.getInterpretation())
+                    .build()
+        ).toList();
 
         return new CommonDto(true, findDiaryRes);
     }

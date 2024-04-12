@@ -87,4 +87,18 @@ public class DiaryController {
         return ResponseEntity.ok(diaryService.findDiary(userPrincipal, diaryId));
     }
 
+    //꿈 일기 조회(모두)
+    @Operation(summary = "모든 꿈 일기 조회", description = "유저에 해당하는 모든 꿈 일기를 조회합니다. (페이징은 0부터 시작)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = FindDiaryRes.class) ) } ),
+            @ApiResponse(responseCode = "400", description = "조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    })
+    @GetMapping
+    public ResponseEntity<CommonDto> findAllDiary (
+            @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @RequestParam(name = "page") Integer page
+    ) {
+        return ResponseEntity.ok(diaryService.findAllDiary(userPrincipal, page));
+    }
+
 }
