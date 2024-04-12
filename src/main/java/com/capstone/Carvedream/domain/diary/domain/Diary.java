@@ -45,7 +45,7 @@ public class Diary {
     private User user;
 
     @Builder
-    public Diary(String title, String content, String image_url, LocalDateTime date, String interpretation, Emotion emotion, LocalTime start_sleep, LocalTime end_sleep, Boolean changed, User user) {
+    public Diary(String title, String content, String image_url, LocalDateTime date, String interpretation, Emotion emotion, LocalTime start_sleep, LocalTime end_sleep, User user) {
         this.title = title;
         this.content = content;
         this.image_url = image_url;
@@ -54,7 +54,7 @@ public class Diary {
         this.emotion = emotion;
         this.start_sleep = start_sleep;
         this.end_sleep = end_sleep;
-        this.changed = changed;
+        this.changed = false;
         this.user = user;
     }
 }
