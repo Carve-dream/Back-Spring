@@ -7,7 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.LocalTime;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -26,7 +26,7 @@ public class Diary {
 
     private String image_url;
 
-    private LocalDateTime date;
+    private LocalDate date;
 
     private String interpretation;
 
@@ -45,7 +45,7 @@ public class Diary {
     private User user;
 
     @Builder
-    public Diary(String title, String content, String image_url, LocalDateTime date, String interpretation, Emotion emotion, LocalTime start_sleep, LocalTime end_sleep, User user) {
+    public Diary(String title, String content, String image_url, LocalDate date, String interpretation, Emotion emotion, LocalTime start_sleep, LocalTime end_sleep, User user) {
         this.title = title;
         this.content = content;
         this.image_url = image_url;
@@ -56,5 +56,15 @@ public class Diary {
         this.end_sleep = end_sleep;
         this.changed = false;
         this.user = user;
+    }
+
+    public void updateDiary(String title, String content, LocalDate date, Emotion emotion, LocalTime start_sleep, LocalTime end_sleep) {
+        this.title = title;
+        this.content = content;
+        this.date = date;
+        this.emotion = emotion;
+        this.start_sleep = start_sleep;
+        this.end_sleep = end_sleep;
+        this.changed = true;
     }
 }
