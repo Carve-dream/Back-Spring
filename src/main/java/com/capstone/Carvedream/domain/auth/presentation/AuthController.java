@@ -82,7 +82,7 @@ public class AuthController {
             @ApiResponse(responseCode = "200", description = "탈퇴 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Message.class) ) } ),
             @ApiResponse(responseCode = "400", description = "탈퇴 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
     })
-    @DeleteMapping(value="/cancel")
+    @DeleteMapping
     public ResponseEntity<Message> cancel(
             @Parameter(description = "Schemas의 RefreshTokenRequest를 참고해주세요.", required = true) @Valid @RequestBody RefreshTokenReq tokenRefreshRequest
     ) {
