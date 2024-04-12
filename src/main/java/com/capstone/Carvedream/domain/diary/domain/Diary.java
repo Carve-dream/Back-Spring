@@ -1,5 +1,6 @@
 package com.capstone.Carvedream.domain.diary.domain;
 
+import com.capstone.Carvedream.domain.common.BaseEntity;
 import com.capstone.Carvedream.domain.user.domain.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -14,7 +15,7 @@ import java.time.LocalTime;
 @Getter
 @Entity
 @Table(name = "diary")
-public class Diary {
+public class Diary extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
