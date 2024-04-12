@@ -3,6 +3,7 @@ package com.capstone.Carvedream.domain.diary.domain;
 import com.capstone.Carvedream.domain.user.domain.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -42,4 +43,18 @@ public class Diary {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    @Builder
+    public Diary(String title, String content, String image_url, LocalDateTime date, String interpretation, Emotion emotion, LocalTime start_sleep, LocalTime end_sleep, Boolean changed, User user) {
+        this.title = title;
+        this.content = content;
+        this.image_url = image_url;
+        this.date = date;
+        this.interpretation = interpretation;
+        this.emotion = emotion;
+        this.start_sleep = start_sleep;
+        this.end_sleep = end_sleep;
+        this.changed = changed;
+        this.user = user;
+    }
 }
