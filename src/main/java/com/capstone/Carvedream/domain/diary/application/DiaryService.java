@@ -5,6 +5,7 @@ import com.capstone.Carvedream.domain.diary.domain.repository.DiaryRepository;
 import com.capstone.Carvedream.domain.diary.dto.request.CreateDiaryReq;
 import com.capstone.Carvedream.domain.diary.dto.request.UpdateDiaryReq;
 import com.capstone.Carvedream.domain.diary.dto.response.CreateDiaryRes;
+import com.capstone.Carvedream.domain.diary.dto.response.FindDiaryRes;
 import com.capstone.Carvedream.domain.diary.dto.response.UpdateDiaryRes;
 import com.capstone.Carvedream.domain.diary.exception.InvalidDiaryException;
 import com.capstone.Carvedream.domain.user.domain.User;
@@ -82,5 +83,29 @@ public class DiaryService {
         diaryRepository.delete(diary);
 
         return new CommonDto(true, Message.builder().message("꿈이 삭제되었습니다.").build());
+    }
+
+    // id로 꿈 일기 조회
+    public CommonDto findDiary(UserPrincipal userPrincipal, Long id) {
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(InvalidUserException::new);
+        Diary diary = diaryRepository.findById(id).orElseThrow(InvalidDiaryException::new);
+
+        if (!diary.getUser().equals(user)) {
+            throw new InvalidDiaryException();
+        }
+
+        FindDiaryRes findDiaryRes = FindDiaryRes.builder()
+                .id(diary.getId())
+                .title(diary.getTitle())
+                .content(diary.getContent())
+                .date(diary.getDate())
+                .emotion(diary.getEmotion())
+                .image_url(diary.getImage_url())
+                .end_sleep(diary.getEnd_sleep())
+                .start_sleep(diary.getStart_sleep())
+                .interpretation(diary.getInterpretation())
+                .build();
+
+        return new CommonDto(true, findDiaryRes);
     }
 }

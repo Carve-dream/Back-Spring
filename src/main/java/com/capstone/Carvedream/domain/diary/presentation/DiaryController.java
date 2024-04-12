@@ -4,6 +4,7 @@ import com.capstone.Carvedream.domain.diary.application.DiaryService;
 import com.capstone.Carvedream.domain.diary.dto.request.CreateDiaryReq;
 import com.capstone.Carvedream.domain.diary.dto.request.UpdateDiaryReq;
 import com.capstone.Carvedream.domain.diary.dto.response.CreateDiaryRes;
+import com.capstone.Carvedream.domain.diary.dto.response.FindDiaryRes;
 import com.capstone.Carvedream.domain.diary.dto.response.UpdateDiaryRes;
 import com.capstone.Carvedream.global.config.security.token.CurrentUser;
 import com.capstone.Carvedream.global.config.security.token.UserPrincipal;
@@ -70,6 +71,20 @@ public class DiaryController {
             @PathVariable(value = "diaryId") Long diaryId
     ) {
         return ResponseEntity.ok(diaryService.deleteDiary(userPrincipal, diaryId));
+    }
+
+    //꿈 일기 조회(하나)
+    @Operation(summary = "꿈 일기 조회", description = "ID에 해당하는 꿈 일기를 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = FindDiaryRes.class) ) } ),
+            @ApiResponse(responseCode = "400", description = "조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    })
+    @GetMapping("/{diaryId}")
+    public ResponseEntity<CommonDto> findDiary (
+            @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @PathVariable(value = "diaryId") Long diaryId
+    ) {
+        return ResponseEntity.ok(diaryService.findDiary(userPrincipal, diaryId));
     }
 
 }
