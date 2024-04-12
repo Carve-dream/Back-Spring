@@ -68,4 +68,19 @@ public class DiaryService {
 
         return new CommonDto(true, updateDiaryRes);
     }
+
+    // 꿈 일기 삭제
+    @Transactional
+    public CommonDto deleteDiary(UserPrincipal userPrincipal, Long id) {
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(InvalidUserException::new);
+        Diary diary = diaryRepository.findById(id).orElseThrow(InvalidDiaryException::new);
+
+        if (!diary.getUser().equals(user)) {
+            throw new InvalidDiaryException();
+        }
+
+        diaryRepository.delete(diary);
+
+        return new CommonDto(true, Message.builder().message("꿈이 삭제되었습니다.").build());
+    }
 }
