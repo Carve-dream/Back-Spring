@@ -44,7 +44,7 @@ public class DiaryService {
                 .start_sleep(createDiaryReq.getStart_sleep())
                 .end_sleep(createDiaryReq.getEnd_sleep())
                 .emotion(createDiaryReq.getEmotion())
-                .date(LocalDate.now())
+                .date(createDiaryReq.getDate())
                 .user(user)
                 .build();
 
