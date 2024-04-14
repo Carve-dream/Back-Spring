@@ -7,8 +7,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface DiaryRepository extends JpaRepository<Diary, Long> {
 
     Page<Diary> findAllByUser(User user, PageRequest pageRequest);
+
+    Optional<Diary> findByIdAndUser(Long id, User user);
 }

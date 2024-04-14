@@ -148,7 +148,7 @@ public class DiaryService {
         String result = "해몽 결과 들어갈 문자열";
 
         if (useGptReq.getId() != 0) {
-            Diary diary = diaryRepository.findById(userPrincipal.getId()).orElseThrow(InvalidDiaryException::new);
+            Diary diary = diaryRepository.findByIdAndUser(userPrincipal.getId(), user).orElseThrow(InvalidDiaryException::new);
             diary.updateInterpretation(result);
         }
 
@@ -165,7 +165,7 @@ public class DiaryService {
         String result = "이미지 url 결과 들어갈 문자열";
 
         if (useGptReq.getId() != 0) {
-            Diary diary = diaryRepository.findById(userPrincipal.getId()).orElseThrow(InvalidDiaryException::new);
+            Diary diary = diaryRepository.findByIdAndUser(userPrincipal.getId(), user).orElseThrow(InvalidDiaryException::new);
             diary.updateImageUrl(result);
         }
 
