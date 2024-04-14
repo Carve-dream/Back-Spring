@@ -154,4 +154,21 @@ public class DiaryService {
 
         return new CommonDto(true, new UseGptRes(result));
     }
+
+    // 이미지화하기
+    @Transactional
+    public CommonDto createImage(UserPrincipal userPrincipal, UseGptReq useGptReq) {
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(InvalidUserException::new);
+
+        //TODO 이미지화 로직
+        //GPT 사용
+        String result = "이미지 url 결과 들어갈 문자열";
+
+        if (useGptReq.getId() != 0) {
+            Diary diary = diaryRepository.findById(userPrincipal.getId()).orElseThrow(InvalidDiaryException::new);
+            diary.updateImageUrl(result);
+        }
+
+        return new CommonDto(true, new UseGptRes(result));
+    }
 }

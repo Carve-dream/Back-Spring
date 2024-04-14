@@ -116,4 +116,17 @@ public class DiaryController {
         return ResponseEntity.ok(diaryService.interpret(userPrincipal, useGptReq));
     }
 
+    @Operation(summary = "이미지화하기", description = "문자열에 대한 이미지url 결과를 보여줍니다. (작성한 일기가 없다면 id는 0으로)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "이미지화 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = UseGptRes.class) ) } ),
+            @ApiResponse(responseCode = "400", description = "이미지화 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    })
+    @PostMapping("/image")
+    public ResponseEntity<CommonDto> createImage (
+            @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @Valid @RequestBody UseGptReq useGptReq
+    ) {
+        return ResponseEntity.ok(diaryService.createImage(userPrincipal, useGptReq));
+    }
+
 }

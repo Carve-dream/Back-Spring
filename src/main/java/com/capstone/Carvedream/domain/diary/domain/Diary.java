@@ -72,4 +72,8 @@ public class Diary extends BaseEntity {
     public void updateInterpretation(String interpretation) {
         this.interpretation = interpretation;
     }
+
+    public void updateImageUrl(String image_url) {
+        this.image_url = image_url;
+    }
 }
