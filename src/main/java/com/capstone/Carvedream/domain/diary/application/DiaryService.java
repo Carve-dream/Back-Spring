@@ -4,9 +4,11 @@ import com.capstone.Carvedream.domain.diary.domain.Diary;
 import com.capstone.Carvedream.domain.diary.domain.repository.DiaryRepository;
 import com.capstone.Carvedream.domain.diary.dto.request.CreateDiaryReq;
 import com.capstone.Carvedream.domain.diary.dto.request.UpdateDiaryReq;
+import com.capstone.Carvedream.domain.diary.dto.request.UseGptReq;
 import com.capstone.Carvedream.domain.diary.dto.response.CreateDiaryRes;
 import com.capstone.Carvedream.domain.diary.dto.response.FindDiaryRes;
 import com.capstone.Carvedream.domain.diary.dto.response.UpdateDiaryRes;
+import com.capstone.Carvedream.domain.diary.dto.response.UseGptRes;
 import com.capstone.Carvedream.domain.diary.exception.InvalidDiaryException;
 import com.capstone.Carvedream.domain.user.domain.User;
 import com.capstone.Carvedream.domain.user.domain.repository.UserRepository;
@@ -134,5 +136,22 @@ public class DiaryService {
         ).toList();
 
         return new CommonDto(true, findDiaryRes);
+    }
+
+    // 해몽하기
+    @Transactional
+    public CommonDto interpret(UserPrincipal userPrincipal, UseGptReq useGptReq) {
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(InvalidUserException::new);
+
+        //TODO 해몽 로직
+        //GPT 사용
+        String result = "해몽 결과 들어갈 문자열";
+
+        if (useGptReq.getId() != 0) {
+            Diary diary = diaryRepository.findById(userPrincipal.getId()).orElseThrow(InvalidDiaryException::new);
+            diary.updateInterpretation(result);
+        }
+
+        return new CommonDto(true, new UseGptRes(result));
     }
 }

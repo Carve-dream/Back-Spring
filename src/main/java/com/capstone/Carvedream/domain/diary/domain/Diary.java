@@ -68,4 +68,8 @@ public class Diary extends BaseEntity {
         this.end_sleep = end_sleep;
         this.changed = true;
     }
+
+    public void updateInterpretation(String interpretation) {
+        this.interpretation = interpretation;
+    }
 }
