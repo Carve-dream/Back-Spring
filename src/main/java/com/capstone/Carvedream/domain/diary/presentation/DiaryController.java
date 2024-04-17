@@ -24,6 +24,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @Tag(name = "Diary", description = "꿈 일기 API")
 @RestController
@@ -121,12 +124,13 @@ public class DiaryController {
             @ApiResponse(responseCode = "200", description = "이미지화 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = UseGptRes.class) ) } ),
             @ApiResponse(responseCode = "400", description = "이미지화 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
     })
-    @PostMapping("/image")
+    @PostMapping("/image/{diaryId}")
     public ResponseEntity<CommonDto> createImage (
             @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
-            @Valid @RequestBody UseGptReq useGptReq
-    ) {
-        return ResponseEntity.ok(diaryService.createImage(userPrincipal, useGptReq));
+            @PathVariable(value = "diaryId") Long diaryId,
+            @Parameter(description = "img의 url") @RequestPart(value = "img", required = false) MultipartFile imageUrl
+    ) throws IOException {
+        return ResponseEntity.ok(diaryService.createImage(userPrincipal, diaryId, imageUrl));
     }
 
 }
