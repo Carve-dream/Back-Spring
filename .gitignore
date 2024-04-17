@@ -35,3 +35,8 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Project security ###
+**/resources/application.yml
+**/resources/database/
+**/resources/oauth2/
