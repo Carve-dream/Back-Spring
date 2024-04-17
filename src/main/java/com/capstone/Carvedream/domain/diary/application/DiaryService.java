@@ -4,6 +4,7 @@ import com.capstone.Carvedream.domain.diary.domain.Diary;
 import com.capstone.Carvedream.domain.diary.domain.repository.DiaryRepository;
 import com.capstone.Carvedream.domain.diary.dto.request.CreateDiaryReq;
 import com.capstone.Carvedream.domain.diary.dto.request.UpdateDiaryReq;
+import com.capstone.Carvedream.domain.diary.dto.response.CalendarRes;
 import com.capstone.Carvedream.domain.diary.dto.response.CreateDiaryRes;
 import com.capstone.Carvedream.domain.diary.dto.response.FindDiaryRes;
 import com.capstone.Carvedream.domain.diary.dto.response.UpdateDiaryRes;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -118,7 +120,6 @@ public class DiaryService {
 
         Page<Diary> diaryPage = diaryRepository.findAllByUser(user, PageRequest.of(page, 10));
 
-
         List<FindDiaryRes> findDiaryRes = diaryPage.stream().map(
                 diary -> FindDiaryRes.builder()
                     .id(diary.getId())
@@ -135,4 +136,31 @@ public class DiaryService {
 
         return new CommonDto(true, findDiaryRes);
     }
+
+    //캘린더에 감정 이모티콘 불러오기
+    public CommonDto getEmotionCalendar(UserPrincipal userPrincipal, Integer year, Integer month) {
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(InvalidUserException::new);
+
+        List<Diary> diaryList = getDiariesForMonth(user, year, month);
+
+        List<CalendarRes> calendarRes = diaryList.stream().map(
+                diary -> CalendarRes.builder()
+                        .id(diary.getId())
+                        .date(diary.getDate())
+                        .emotion(diary.getEmotion())
+
+                        .build()
+        ).toList();
+
+        return new CommonDto(true, calendarRes);
+    }
+
+    private List<Diary> getDiariesForMonth(User user, int year, int month) {
+        YearMonth yearMonth = YearMonth.of(year, month);
+        LocalDate start = yearMonth.atDay(1);
+        LocalDate end = yearMonth.atEndOfMonth();
+
+        return diaryRepository.findAllByUserAndDateBetween(user, start, end);
+    }
+
 }
