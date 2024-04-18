@@ -21,24 +21,32 @@ public class Diary extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "title")
     private String title;
 
+    @Column(name = "content")
     private String content;
 
+    @Column(name = "image_url")
     private String image_url;
 
+    @Column(name = "date")
     private LocalDate date;
 
+    @Column(name = "interpretation")
     private String interpretation;
 
     @Column(name = "emotion")
     @Enumerated(EnumType.STRING)
     private Emotion emotion;
 
+    @Column(name = "start_sleep")
     private LocalTime start_sleep;
 
+    @Column(name = "end_sleep")
     private LocalTime end_sleep;
 
+    @Column(name = "changed")
     private Boolean changed;
 
     @ManyToOne(fetch = FetchType.LAZY)
