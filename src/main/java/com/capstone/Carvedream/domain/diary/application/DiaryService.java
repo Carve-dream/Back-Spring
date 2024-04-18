@@ -14,6 +14,7 @@ import com.capstone.Carvedream.domain.user.domain.User;
 import com.capstone.Carvedream.domain.user.domain.repository.UserRepository;
 import com.capstone.Carvedream.domain.user.exception.InvalidUserException;
 import com.capstone.Carvedream.global.config.security.token.UserPrincipal;
+import com.capstone.Carvedream.global.infrastructure.S3Uploader;
 import com.capstone.Carvedream.global.payload.CommonDto;
 import com.capstone.Carvedream.global.payload.Message;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -31,6 +34,7 @@ public class DiaryService {
 
     private final UserRepository userRepository;
     private final DiaryRepository diaryRepository;
+    private final S3Uploader s3Uploader;
 
     // 꿈 일기 생성
     @Transactional
@@ -156,14 +160,19 @@ public class DiaryService {
 
     // 이미지화하기
     @Transactional
-    public CommonDto createImage(UserPrincipal userPrincipal, UseGptReq useGptReq) {
+    public CommonDto createImage(UserPrincipal userPrincipal, Long diaryId, MultipartFile imageUrl) throws IOException {
         User user = userRepository.findById(userPrincipal.getId()).orElseThrow(InvalidUserException::new);
 
         //TODO 이미지화 로직
         //GPT 사용
         String result = "이미지 url 결과 들어갈 문자열";
+        // img가 비어있는지 체크
+        // 업로드할 디렉토리 이름 설정 (record의 이미지는 record_img, 프로필의 이미지는 profile_img
+        if (imageUrl != null) {
+            result = s3Uploader.upload(imageUrl, "dream");
+        }
 
-        if (useGptReq.getId() != 0) {
+        if (diaryId != 0) {
             Diary diary = diaryRepository.findByIdAndUser(userPrincipal.getId(), user).orElseThrow(InvalidDiaryException::new);
             diary.updateImageUrl(result);
         }
