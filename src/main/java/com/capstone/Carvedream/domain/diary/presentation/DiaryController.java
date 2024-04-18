@@ -3,9 +3,11 @@ package com.capstone.Carvedream.domain.diary.presentation;
 import com.capstone.Carvedream.domain.diary.application.DiaryService;
 import com.capstone.Carvedream.domain.diary.dto.request.CreateDiaryReq;
 import com.capstone.Carvedream.domain.diary.dto.request.UpdateDiaryReq;
+import com.capstone.Carvedream.domain.diary.dto.request.UseGptReq;
 import com.capstone.Carvedream.domain.diary.dto.response.CreateDiaryRes;
 import com.capstone.Carvedream.domain.diary.dto.response.FindDiaryRes;
 import com.capstone.Carvedream.domain.diary.dto.response.UpdateDiaryRes;
+import com.capstone.Carvedream.domain.diary.dto.response.UseGptRes;
 import com.capstone.Carvedream.global.config.security.token.CurrentUser;
 import com.capstone.Carvedream.global.config.security.token.UserPrincipal;
 import com.capstone.Carvedream.global.payload.CommonDto;
@@ -99,6 +101,32 @@ public class DiaryController {
             @RequestParam(name = "page") Integer page
     ) {
         return ResponseEntity.ok(diaryService.findAllDiary(userPrincipal, page));
+    }
+
+    @Operation(summary = "해몽하기", description = "문자열에 대한 해몽 결과를 보여줍니다. (작성한 일기가 없다면 id는 0으로)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "해몽 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = UseGptRes.class) ) } ),
+            @ApiResponse(responseCode = "400", description = "해몽 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    })
+    @PostMapping("/interpretation")
+    public ResponseEntity<CommonDto> interpret (
+            @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @Valid @RequestBody UseGptReq useGptReq
+    ) {
+        return ResponseEntity.ok(diaryService.interpret(userPrincipal, useGptReq));
+    }
+
+    @Operation(summary = "이미지화하기", description = "문자열에 대한 이미지url 결과를 보여줍니다. (작성한 일기가 없다면 id는 0으로)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "이미지화 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = UseGptRes.class) ) } ),
+            @ApiResponse(responseCode = "400", description = "이미지화 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    })
+    @PostMapping("/image")
+    public ResponseEntity<CommonDto> createImage (
+            @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @Valid @RequestBody UseGptReq useGptReq
+    ) {
+        return ResponseEntity.ok(diaryService.createImage(userPrincipal, useGptReq));
     }
 
 }

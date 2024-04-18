@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Data
@@ -27,4 +28,7 @@ public class CreateDiaryReq {
 
     @Schema(description = "감정", example = "THRILL")
     private Emotion emotion;
+
+    @Schema(description = "날짜", example = "2024-04-13")
+    private LocalDate date;
 }
