@@ -5,15 +5,8 @@ import com.capstone.Carvedream.domain.diary.domain.Emotion;
 import com.capstone.Carvedream.domain.diary.domain.repository.DiaryRepository;
 import com.capstone.Carvedream.domain.diary.dto.request.CreateDiaryReq;
 import com.capstone.Carvedream.domain.diary.dto.request.UpdateDiaryReq;
-<<<<<<< HEAD
 import com.capstone.Carvedream.domain.diary.dto.request.UseGptReq;
-=======
->>>>>>> 79f24340cdf7b3823890f5b66d6804da8dcf74bb
-import com.capstone.Carvedream.domain.diary.dto.response.CalendarRes;
-import com.capstone.Carvedream.domain.diary.dto.response.CreateDiaryRes;
-import com.capstone.Carvedream.domain.diary.dto.response.FindDiaryRes;
-import com.capstone.Carvedream.domain.diary.dto.response.UpdateDiaryRes;
-import com.capstone.Carvedream.domain.diary.dto.response.UseGptRes;
+import com.capstone.Carvedream.domain.diary.dto.response.*;
 import com.capstone.Carvedream.domain.diary.exception.InvalidDiaryException;
 import com.capstone.Carvedream.domain.user.domain.User;
 import com.capstone.Carvedream.domain.user.domain.repository.UserRepository;
@@ -149,7 +142,6 @@ public class DiaryService {
         return new CommonDto(true, findDiaryRes);
     }
 
-<<<<<<< HEAD
     // 해몽하기
     @Transactional
     public CommonDto interpret(UserPrincipal userPrincipal, UseGptReq useGptReq) {
@@ -189,8 +181,7 @@ public class DiaryService {
         return new CommonDto(true, new UseGptRes(result));
     }
 
-=======
->>>>>>> 79f24340cdf7b3823890f5b66d6804da8dcf74bb
+
     //캘린더에 감정 이모티콘 불러오기
     public CommonDto getEmotionCalendar(UserPrincipal userPrincipal, Integer year, Integer month) {
         User user = userRepository.findById(userPrincipal.getId()).orElseThrow(InvalidUserException::new);
