@@ -1,6 +1,7 @@
 package com.capstone.Carvedream.domain.diary.application;
 
 import com.capstone.Carvedream.domain.diary.domain.Diary;
+import com.capstone.Carvedream.domain.diary.domain.Emotion;
 import com.capstone.Carvedream.domain.diary.domain.repository.DiaryRepository;
 import com.capstone.Carvedream.domain.diary.dto.request.CreateDiaryReq;
 import com.capstone.Carvedream.domain.diary.dto.request.UpdateDiaryReq;
@@ -23,7 +24,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Service
@@ -155,6 +158,28 @@ public class DiaryService {
         return new CommonDto(true, calendarRes);
     }
 
+    //그래프에 감정 이모티콘 개수 불러오기
+    public CommonDto getEmotionCount(UserPrincipal userPrincipal, Integer year, Integer month) {
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(InvalidUserException::new);
+
+        List<Diary> diaryList = getDiariesForMonth(user, year, month);
+
+        Map<Emotion, Integer> emotionCountMap = new HashMap<>();
+
+        for (Emotion emotion : Emotion.values()) {
+            emotionCountMap.put(emotion, 0);
+        }
+
+        for (Diary diary : diaryList) {
+            Emotion emotion = diary.getEmotion();
+            if (emotion != null) {
+                emotionCountMap.put(emotion, emotionCountMap.get(emotion) + 1);
+            }
+        }
+        return new CommonDto(true, emotionCountMap);
+    }
+
+    // 월별 조회
     private List<Diary> getDiariesForMonth(User user, int year, int month) {
         YearMonth yearMonth = YearMonth.of(year, month);
         LocalDate start = yearMonth.atDay(1);

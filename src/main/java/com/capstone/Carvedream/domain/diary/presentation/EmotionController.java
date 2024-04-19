@@ -22,15 +22,25 @@ public class EmotionController {
 
     private final DiaryService diaryService;
 
-    //감정 이모티콘 불러오기
+    //감정 캘린더 월별 조회
     @GetMapping
     public ResponseEntity<CommonDto> getEmotionCal(
             @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
             @RequestParam(value = "year") Integer year,
             @RequestParam(value = "month") Integer month
     ) {
-
         return ResponseEntity.ok(diaryService.getEmotionCalendar(userPrincipal, year, month));
-
     }
+
+    // 감정 그래프 월별 조회
+    @GetMapping("/graph")
+    public ResponseEntity<CommonDto> getEmotionCountForGrpah(
+            @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @RequestParam(value = "year") Integer year,
+            @RequestParam(value = "month") Integer month
+    ) {
+        return ResponseEntity.ok(diaryService.getEmotionCount(userPrincipal, year, month));
+    }
+
+
 }
