@@ -12,11 +12,8 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.List;
 
-<<<<<<< HEAD
 import java.util.Optional;
 
-=======
->>>>>>> 79f24340cdf7b3823890f5b66d6804da8dcf74bb
 @Repository
 public interface DiaryRepository extends JpaRepository<Diary, Long> {
 
@@ -25,9 +22,6 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
     Integer countByEmotionAndUser(Emotion emotion, User user);
 
     List<Diary> findAllByUserAndDateBetween(User user, LocalDate start, LocalDate end);
-<<<<<<< HEAD
 
     Optional<Diary> findByIdAndUser(Long id, User user);
-=======
->>>>>>> 79f24340cdf7b3823890f5b66d6804da8dcf74bb
 }
