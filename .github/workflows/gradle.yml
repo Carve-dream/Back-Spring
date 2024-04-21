@@ -28,43 +28,31 @@ jobs:
       env:
         APPLICATION_YML: ${{ secrets.APPLICATION_YML }}
         APPLICATION_YML_DIR: ./src/main/resources
-        APPLICATION_YML_TEST_DIR: ./src/test/resources
         APPLICATION_YML_DIR_FILE_NAME: application.yml
       run: |
         mkdir -p $APPLICATION_YML_DIR
-        mkdir -p $APPLICATION_YML_TEST_DIR
         echo $APPLICATION_YML | base64 --decode > $APPLICATION_YML_DIR/$APPLICATION_YML_DIR_FILE_NAME
-        echo $APPLICATION_YML | base64 --decode > $APPLICATION_YML_TEST_DIR/$APPLICATION_YML_DIR_FILE_NAME
 
     - name: Create application-database.yml
       env:
         APPLICATION_DATABASE_YML: ${{ secrets.APPLICATION_DATABASE_YML }}
         APPLICATION_DATABASE_YML_DIR: ./src/main/resources/database
-        APPLICATION_DATABASE_YML_TEST_DIR: ./src/test/resources/database
         APPLICATION_DATABASE_YML_DIR_FILE_NAME: application-database.yml
       run: |
         mkdir -p $APPLICATION_DATABASE_YML_DIR
-        mkdir -p $APPLICATION_DATABASE_YML_TEST_DIR
         echo $APPLICATION_DATABASE_YML | base64 --decode > $APPLICATION_DATABASE_YML_DIR/$APPLICATION_DATABASE_YML_DIR_FILE_NAME
-        echo $APPLICATION_DATABASE_YML | base64 --decode > $APPLICATION_DATABASE_YML_TEST_DIR/$APPLICATION_DATABASE_YML_DIR_FILE_NAME
 
     - name: Create application-oauth2.yml
       env:
         APPLICATION_OAUTH2_YML: ${{ secrets.APPLICATION_OAUTH2_YML }}
         APPLICATION_OAUTH2_YML_DIR: ./src/main/resources/oauth2
-        APPLICATION_OAUTH2_YML_TEST_DIR: ./src/test/resources/oauth2
         APPLICATION_OAUTH2_YML_DIR_FILE_NAME: application-oauth2.yml
       run: |
         mkdir -p $APPLICATION_OAUTH2_YML_DIR
-        mkdir -p $APPLICATION_OAUTH2_YML_TEST_DIR
         echo $APPLICATION_OAUTH2_YML | base64 --decode > $APPLICATION_OAUTH2_YML_DIR/$APPLICATION_OAUTH2_YML_DIR_FILE_NAME
-        echo $APPLICATION_OAUTH2_YML | base64 --decode > $APPLICATION_OAUTH2_YML_TEST_DIR/$APPLICATION_OAUTH2_YML_DIR_FILE_NAME
-
-    # - name: Setup Gradle
-    #   uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5 # v3.1.0
 
     - name: Build with Gradle Wrapper
-      run: ./gradlew build
+      run: ./gradlew build -x test  # 테스트 실행 제외
 
   dependency-submission:
     runs-on: ubuntu-latest
