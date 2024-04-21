@@ -31,6 +31,33 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
+    - name: Create application.yml
+      env:
+        APPLICATION_YML: ${{ secrets.APPLICATION_YML }}
+        APPLICATION_YML_DIR: ./src/main/resources
+        APPLICATION_YML_TEST_DIR: ./src/test/resources
+        APPLICATION_YML_DIR_FILE_NAME: application.yml
+      run: echo $APPLICATION_YML | base64 --decode > $APPLICATION_YML_DIR/$APPLICATION_YML_DIR_FILE_NAME &&
+           echo $APPLICATION_YML | base64 --decode > $APPLICATION_YML_TEST_DIR/$APPLICATION_YML_DIR_FILE_NAME
+           
+    - name: Create application-database.yml
+      env:
+        APPLICATION_DATABASE_YML: ${{ secrets.APPLICATION_DATABASE_YML }}
+        APPLICATION_DATABASE_YML_DIR: ./src/main/resources/database
+        APPLICATION_DATABASE_YML_TEST_DIR: ./src/test/resources/database
+        APPLICATION_DATABASE_YML_DIR_FILE_NAME: application-database.yml
+      run: echo $APPLICATION_DATABASE_YML | base64 --decode > $APPLICATION_DATABASE_YML_DIR/$APPLICATION_DATABASE_YML_DIR_FILE_NAME &&
+           echo $APPLICATION_DATABASE_YML | base64 --decode > $APPLICATION_DATABASE_YML_TEST_DIR/$APPLICATION_DATABASE_YML_DIR_FILE_NAME
+ 
+    - name: Create application-oauth2.yml
+      env:
+        APPLICATION_OAUTH2_YML: ${{ secrets.APPLICATION_OAUTH2_YML }}
+        APPLICATION_OAUTH2_YML_DIR: ./src/main/resources/oauth2
+        APPLICATION_OAUTH2_YML_TEST_DIR: ./src/test/resources/oauth2
+        APPLICATION_OAUTH2_YML_DIR_FILE_NAME: application-oauth2.yml
+      run: echo $APPLICATION_OAUTH2_YML | base64 --decode > $APPLICATION_OAUTH2_YML_DIR/$APPLICATION_OAUTH2_YML_DIR_FILE_NAME &&
+           echo $APPLICATION_OAUTH2_YML | base64 --decode > $APPLICATION_OAUTH2_YML_TEST_DIR/$APPLICATION_OAUTH2_YML_DIR_FILE_NAME
+
     # Configure Gradle for optimal use in GiHub Actions, including caching of downloaded dependencies.
     # See: https://github.com/gradle/actions/blob/main/setup-gradle/README.md
     - name: Setup Gradle
