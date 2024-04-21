@@ -1,0 +1,26 @@
+version: 0.0
+os: linux
+
+# 배포파일 설정
+files:
+  - source:  /
+    destination: /home/ubuntu/app
+    overwrite: yes
+
+# files 섹션에서 복사한 파일에 대한 권한 설정
+permissions:
+  - object: /
+    pattern: "**"
+    owner: ubuntu
+    group: ubuntu
+
+# 배포 이후 수행할 스크립트 지정
+hooks:
+  AfterInstall:
+    - location: scripts/stop.sh
+      timeout: 60
+      runas: ubuntu
+  ApplicationStart:
+    - location: scripts/start.sh
+      timeout: 60
+      runas: ubuntu
