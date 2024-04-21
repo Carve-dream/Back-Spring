@@ -37,6 +37,10 @@ jobs:
         distribution: 'temurin'
         java-version: '11'
 
+    # gradlew에 실행 권한 부여
+    - name: Make gradlew executable
+      run: chmod +x ./gradlew
+
     # (3) Gradle build (Test 제외)
     - name: Build with Gradle
       uses: gradle/gradle-build-action@0d13054264b0bb894ded474f08ebb30921341cee
