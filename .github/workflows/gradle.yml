@@ -1,10 +1,3 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-# This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-gradle
-
 name: Java CI with Gradle
 
 on:
@@ -15,16 +8,13 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     permissions:
       contents: read
 
     steps:
-    # 1) 워크플로우 실행 전 기본적으로 체크아웃 필요
     - uses: actions/checkout@v4
 
-    # 2) JDK 17 버전 설치, 다른 JDK 버전을 사용한다면 수정 필요
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
@@ -37,48 +27,43 @@ jobs:
         APPLICATION_YML_DIR: ./src/main/resources
         APPLICATION_YML_TEST_DIR: ./src/test/resources
         APPLICATION_YML_DIR_FILE_NAME: application.yml
-      run: echo $APPLICATION_YML | base64 --decode > $APPLICATION_YML_DIR/$APPLICATION_YML_DIR_FILE_NAME &&
-           echo $APPLICATION_YML | base64 --decode > $APPLICATION_YML_TEST_DIR/$APPLICATION_YML_DIR_FILE_NAME
-           
+      run: |
+        mkdir -p $APPLICATION_YML_DIR
+        mkdir -p $APPLICATION_YML_TEST_DIR
+        echo $APPLICATION_YML | base64 --decode > $APPLICATION_YML_DIR/$APPLICATION_YML_DIR_FILE_NAME
+        echo $APPLICATION_YML | base64 --decode > $APPLICATION_YML_TEST_DIR/$APPLICATION_YML_DIR_FILE_NAME
+
     - name: Create application-database.yml
       env:
         APPLICATION_DATABASE_YML: ${{ secrets.APPLICATION_DATABASE_YML }}
         APPLICATION_DATABASE_YML_DIR: ./src/main/resources/database
         APPLICATION_DATABASE_YML_TEST_DIR: ./src/test/resources/database
         APPLICATION_DATABASE_YML_DIR_FILE_NAME: application-database.yml
-      run: echo $APPLICATION_DATABASE_YML | base64 --decode > $APPLICATION_DATABASE_YML_DIR/$APPLICATION_DATABASE_YML_DIR_FILE_NAME &&
-           echo $APPLICATION_DATABASE_YML | base64 --decode > $APPLICATION_DATABASE_YML_TEST_DIR/$APPLICATION_DATABASE_YML_DIR_FILE_NAME
- 
+      run: |
+        mkdir -p $APPLICATION_DATABASE_YML_DIR
+        mkdir -p $APPLICATION_DATABASE_YML_TEST_DIR
+        echo $APPLICATION_DATABASE_YML | base64 --decode > $APPLICATION_DATABASE_YML_DIR/$APPLICATION_DATABASE_YML_DIR_FILE_NAME
+        echo $APPLICATION_DATABASE_YML | base64 --decode > $APPLICATION_DATABASE_YML_TEST_DIR/$APPLICATION_DATABASE_YML_DIR_FILE_NAME
+
     - name: Create application-oauth2.yml
       env:
         APPLICATION_OAUTH2_YML: ${{ secrets.APPLICATION_OAUTH2_YML }}
         APPLICATION_OAUTH2_YML_DIR: ./src/main/resources/oauth2
         APPLICATION_OAUTH2_YML_TEST_DIR: ./src/test/resources/oauth2
         APPLICATION_OAUTH2_YML_DIR_FILE_NAME: application-oauth2.yml
-      run: echo $APPLICATION_OAUTH2_YML | base64 --decode > $APPLICATION_OAUTH2_YML_DIR/$APPLICATION_OAUTH2_YML_DIR_FILE_NAME &&
-           echo $APPLICATION_OAUTH2_YML | base64 --decode > $APPLICATION_OAUTH2_YML_TEST_DIR/$APPLICATION_OAUTH2_YML_DIR_FILE_NAME
+      run: |
+        mkdir -p $APPLICATION_OAUTH2_YML_DIR
+        mkdir -p $APPLICATION_OAUTH2_YML_TEST_DIR
+        echo $APPLICATION_OAUTH2_YML | base64 --decode > $APPLICATION_OAUTH2_YML_DIR/$APPLICATION_OAUTH2_YML_DIR_FILE_NAME
+        echo $APPLICATION_OAUTH2_YML | base64 --decode > $APPLICATION_OAUTH2_YML_TEST_DIR/$APPLICATION_OAUTH2_YML_DIR_FILE_NAME
 
-    # Configure Gradle for optimal use in GiHub Actions, including caching of downloaded dependencies.
-    # See: https://github.com/gradle/actions/blob/main/setup-gradle/README.md
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5 # v3.1.0
 
     - name: Build with Gradle Wrapper
       run: ./gradlew build
 
-    # NOTE: The Gradle Wrapper is the default and recommended way to run Gradle (https://docs.gradle.org/current/userguide/gradle_wrapper.html).
-    # If your project does not have the Gradle Wrapper configured, you can use the following configuration to run Gradle with a specified version.
-    #
-    # - name: Setup Gradle
-    #   uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5 # v3.1.0
-    #   with:
-    #     gradle-version: '8.5'
-    #
-    # - name: Build with Gradle 8.5
-    #   run: gradle build
-
   dependency-submission:
-
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -91,7 +76,5 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    # Generates and submits a dependency graph, enabling Dependabot Alerts for all project dependencies.
-    # See: https://github.com/gradle/actions/blob/main/dependency-submission/README.md
     - name: Generate and submit dependency graph
       uses: gradle/actions/dependency-submission@417ae3ccd767c252f5661f1ace9f835f9654f2b5 # v3.1.0
