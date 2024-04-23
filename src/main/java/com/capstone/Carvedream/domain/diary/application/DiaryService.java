@@ -1,14 +1,12 @@
 package com.capstone.Carvedream.domain.diary.application;
 
 import com.capstone.Carvedream.domain.diary.domain.Diary;
+import com.capstone.Carvedream.domain.diary.domain.Emotion;
 import com.capstone.Carvedream.domain.diary.domain.repository.DiaryRepository;
 import com.capstone.Carvedream.domain.diary.dto.request.CreateDiaryReq;
 import com.capstone.Carvedream.domain.diary.dto.request.UpdateDiaryReq;
 import com.capstone.Carvedream.domain.diary.dto.request.UseGptReq;
-import com.capstone.Carvedream.domain.diary.dto.response.CreateDiaryRes;
-import com.capstone.Carvedream.domain.diary.dto.response.FindDiaryRes;
-import com.capstone.Carvedream.domain.diary.dto.response.UpdateDiaryRes;
-import com.capstone.Carvedream.domain.diary.dto.response.UseGptRes;
+import com.capstone.Carvedream.domain.diary.dto.response.*;
 import com.capstone.Carvedream.domain.diary.exception.InvalidDiaryException;
 import com.capstone.Carvedream.domain.user.domain.User;
 import com.capstone.Carvedream.domain.user.domain.repository.UserRepository;
@@ -25,7 +23,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Service
@@ -47,7 +49,7 @@ public class DiaryService {
                 .start_sleep(createDiaryReq.getStart_sleep())
                 .end_sleep(createDiaryReq.getEnd_sleep())
                 .emotion(createDiaryReq.getEmotion())
-                .date(createDiaryReq.getDate())
+                .date(LocalDate.now())
                 .user(user)
                 .build();
 
@@ -123,7 +125,6 @@ public class DiaryService {
 
         Page<Diary> diaryPage = diaryRepository.findAllByUser(user, PageRequest.of(page, 10));
 
-
         List<FindDiaryRes> findDiaryRes = diaryPage.stream().map(
                 diary -> FindDiaryRes.builder()
                     .id(diary.getId())
@@ -179,4 +180,54 @@ public class DiaryService {
 
         return new CommonDto(true, new UseGptRes(result));
     }
+
+
+    //캘린더에 감정 이모티콘 불러오기
+    public CommonDto getEmotionCalendar(UserPrincipal userPrincipal, Integer year, Integer month) {
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(InvalidUserException::new);
+
+        List<Diary> diaryList = getDiariesForMonth(user, year, month);
+
+        List<CalendarRes> calendarRes = diaryList.stream().map(
+                diary -> CalendarRes.builder()
+                        .id(diary.getId())
+                        .date(diary.getDate())
+                        .emotion(diary.getEmotion())
+
+                        .build()
+        ).toList();
+
+        return new CommonDto(true, calendarRes);
+    }
+
+    //그래프에 감정 이모티콘 개수 불러오기
+    public CommonDto getEmotionCount(UserPrincipal userPrincipal, Integer year, Integer month) {
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(InvalidUserException::new);
+
+        List<Diary> diaryList = getDiariesForMonth(user, year, month);
+
+        Map<Emotion, Integer> emotionCountMap = new HashMap<>();
+
+        for (Emotion emotion : Emotion.values()) {
+            emotionCountMap.put(emotion, 0);
+        }
+
+        for (Diary diary : diaryList) {
+            Emotion emotion = diary.getEmotion();
+            if (emotion != null) {
+                emotionCountMap.put(emotion, emotionCountMap.get(emotion) + 1);
+            }
+        }
+        return new CommonDto(true, emotionCountMap);
+    }
+
+    // 월별 조회
+    private List<Diary> getDiariesForMonth(User user, int year, int month) {
+        YearMonth yearMonth = YearMonth.of(year, month);
+        LocalDate start = yearMonth.atDay(1);
+        LocalDate end = yearMonth.atEndOfMonth();
+
+        return diaryRepository.findAllByUserAndDateBetween(user, start, end);
+    }
+
 }
