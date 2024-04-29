@@ -63,7 +63,7 @@ public class AuthService {
     //회원가입
     @Transactional
     public Message signup(SignUpReq signUpRequest){
-        DefaultAssert.isTrue(!userRepository.existsByEmail(signUpRequest.getEmail()), "해당 이메일이 존재하지 않습니다.");
+        DefaultAssert.isTrue(!userRepository.existsByEmail(signUpRequest.getEmail()), "이미 존재하는 이메일입니다.");
 
         User user = User.builder()
                         .name(signUpRequest.getName())
