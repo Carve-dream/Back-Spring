@@ -1,10 +1,7 @@
 package com.capstone.Carvedream.domain.auth.domain;
 
 import com.capstone.Carvedream.domain.common.BaseEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -14,6 +11,9 @@ import lombok.Getter;
 public class Token extends BaseEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     @Column(name = "user_email", length = 1024 , nullable = false)
     private String userEmail;
 
