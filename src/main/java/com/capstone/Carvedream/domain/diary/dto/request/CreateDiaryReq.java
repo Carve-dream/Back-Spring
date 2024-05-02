@@ -3,10 +3,13 @@ package com.capstone.Carvedream.domain.diary.dto.request;
 import com.capstone.Carvedream.domain.diary.domain.Emotion;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.JoinColumn;
 import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Set;
 
 @Data
 @Schema(description = "CreateDiaryRequest")
@@ -31,4 +34,8 @@ public class CreateDiaryReq {
 
     @Schema(description = "날짜", example = "2024-04-13")
     private LocalDate date;
+
+    @CollectionTable(name = "diary_tags", joinColumns = @JoinColumn(name = "diary_id"))
+    @Schema(description = "태그", example = "[\"태그1\", \"태그2\"]")
+    private Set<String> tags;
 }
