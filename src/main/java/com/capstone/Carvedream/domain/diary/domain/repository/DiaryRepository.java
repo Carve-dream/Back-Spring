@@ -11,7 +11,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 import java.util.Optional;
-import java.util.Set;
 
 @Repository
 public interface DiaryRepository extends JpaRepository<Diary, Long> {
