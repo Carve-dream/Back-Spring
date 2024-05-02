@@ -50,6 +50,7 @@ public class DiaryService {
                 .end_sleep(createDiaryReq.getEnd_sleep())
                 .emotion(createDiaryReq.getEmotion())
                 .date(LocalDate.now())
+                .tags(createDiaryReq.getTags())
                 .user(user)
                 .build();
 
@@ -70,7 +71,7 @@ public class DiaryService {
             throw new InvalidDiaryException();
         }
 
-        diary.updateDiary(updateDiaryReq.getTitle(), updateDiaryReq.getContent(), updateDiaryReq.getDate(), updateDiaryReq.getEmotion(), updateDiaryReq.getStart_sleep(), updateDiaryReq.getEnd_sleep());
+        diary.updateDiary(updateDiaryReq.getTitle(), updateDiaryReq.getContent(), updateDiaryReq.getDate(), updateDiaryReq.getEmotion(), updateDiaryReq.getStart_sleep(), updateDiaryReq.getEnd_sleep(), updateDiaryReq.getTags());
 
         UpdateDiaryRes updateDiaryRes = UpdateDiaryRes.builder()
                 .changed(diary.getChanged())
@@ -113,6 +114,7 @@ public class DiaryService {
                 .image_url(diary.getImage_url())
                 .end_sleep(diary.getEnd_sleep())
                 .start_sleep(diary.getStart_sleep())
+                .tags(diary.getTags())
                 .interpretation(diary.getInterpretation())
                 .build();
 
@@ -135,6 +137,7 @@ public class DiaryService {
                     .image_url(diary.getImage_url())
                     .end_sleep(diary.getEnd_sleep())
                     .start_sleep(diary.getStart_sleep())
+                    .tags(diary.getTags())
                     .interpretation(diary.getInterpretation())
                     .build()
         ).toList();
@@ -228,6 +231,30 @@ public class DiaryService {
         LocalDate end = yearMonth.atEndOfMonth();
 
         return diaryRepository.findAllByUserAndDateBetween(user, start, end);
+    }
+
+    // 태그 검색
+    public CommonDto searchTag(UserPrincipal userPrincipal, String tags) {
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(InvalidUserException::new);
+
+        List<Diary> diaryList = diaryRepository.findAllByUserAndTagsContaining(user, tags);
+
+        List<FindDiaryRes> findDiaryRes = diaryList.stream().map(
+                diary -> FindDiaryRes.builder()
+                        .id(diary.getId())
+                        .title(diary.getTitle())
+                        .content(diary.getContent())
+                        .date(diary.getDate())
+                        .emotion(diary.getEmotion())
+                        .image_url(diary.getImage_url())
+                        .end_sleep(diary.getEnd_sleep())
+                        .start_sleep(diary.getStart_sleep())
+                        .tags(diary.getTags())
+                        .interpretation(diary.getInterpretation())
+                        .build())
+                .toList();
+
+        return new CommonDto(true, findDiaryRes);
     }
 
 }

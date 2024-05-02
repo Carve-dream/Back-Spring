@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Set;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -53,8 +54,13 @@ public class Diary extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "diary_tags", joinColumns = @JoinColumn(name = "diary_id"))
+    @Column(name = "tags")
+    private Set<String> tags;
+
     @Builder
-    public Diary(String title, String content, String image_url, LocalDate date, String interpretation, Emotion emotion, LocalTime start_sleep, LocalTime end_sleep, User user) {
+    public Diary(String title, String content, String image_url, LocalDate date, String interpretation, Emotion emotion, LocalTime start_sleep, LocalTime end_sleep, Set<String> tags, User user) {
         this.title = title;
         this.content = content;
         this.image_url = image_url;
@@ -63,17 +69,19 @@ public class Diary extends BaseEntity {
         this.emotion = emotion;
         this.start_sleep = start_sleep;
         this.end_sleep = end_sleep;
+        this.tags = tags;
         this.changed = false;
         this.user = user;
     }
 
-    public void updateDiary(String title, String content, LocalDate date, Emotion emotion, LocalTime start_sleep, LocalTime end_sleep) {
+    public void updateDiary(String title, String content, LocalDate date, Emotion emotion, LocalTime start_sleep, LocalTime end_sleep, Set<String> tags) {
         this.title = title;
         this.content = content;
         this.date = date;
         this.emotion = emotion;
         this.start_sleep = start_sleep;
         this.end_sleep = end_sleep;
+        this.tags = tags;
         this.changed = true;
     }
 

@@ -3,11 +3,14 @@ package com.capstone.Carvedream.domain.diary.dto.response;
 import com.capstone.Carvedream.domain.diary.domain.Emotion;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.JoinColumn;
 import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Set;
 
 @Data
 public class FindDiaryRes {
@@ -41,8 +44,12 @@ public class FindDiaryRes {
     @Schema(description = "해몽", example = "이 꿈은 탐험적인 성격을 가진 일상 생활의 변화를 예상할 수 있습니다.")
     private String interpretation;
 
+    @CollectionTable(name = "diary_tags", joinColumns = @JoinColumn(name = "diary_id"))
+    @Schema(description = "태그", example = "[\"태그1\", \"태그2\"]")
+    private Set<String> tags;
+
     @Builder
-    public FindDiaryRes(Long id, String title, String content, String image_url, LocalTime start_sleep, LocalTime end_sleep, LocalDate date, Emotion emotion, String interpretation) {
+    public FindDiaryRes(Long id, String title, String content, String image_url, LocalTime start_sleep, LocalTime end_sleep, LocalDate date, Emotion emotion, String interpretation, Set<String> tags) {
         this.id = id;
         this.title = title;
         this.content = content;
@@ -51,6 +58,7 @@ public class FindDiaryRes {
         this.end_sleep = end_sleep;
         this.date = date;
         this.emotion = emotion;
+        this.tags = tags;
         this.interpretation = interpretation;
     }
 }
