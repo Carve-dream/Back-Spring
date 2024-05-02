@@ -240,9 +240,8 @@ public class DiaryService {
 
         List<Diary> diaryList = diaryRepository.findAllByUserAndTagsContaining(user, tags);
 
-        List<FindDiaryRes> findDiaryRes = diaryList.stream()
-                .filter(diary -> diary.getTags().contains(tags))
-                .map(diary -> FindDiaryRes.builder()
+        List<FindDiaryRes> findDiaryRes = diaryList.stream().map(
+                diary -> FindDiaryRes.builder()
                         .id(diary.getId())
                         .title(diary.getTitle())
                         .content(diary.getContent())
