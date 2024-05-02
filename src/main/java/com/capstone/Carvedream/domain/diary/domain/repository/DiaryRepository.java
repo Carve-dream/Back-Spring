@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface DiaryRepository extends JpaRepository<Diary, Long> {
@@ -20,4 +21,7 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
     List<Diary> findAllByUserAndDateBetween(User user, LocalDate start, LocalDate end);
 
     Optional<Diary> findByIdAndUser(Long id, User user);
+
+    List<Diary> findAllByUserAndTagsContaining(User user, String tags);
+
 }

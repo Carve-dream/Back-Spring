@@ -4,10 +4,7 @@ import com.capstone.Carvedream.domain.diary.application.DiaryService;
 import com.capstone.Carvedream.domain.diary.dto.request.CreateDiaryReq;
 import com.capstone.Carvedream.domain.diary.dto.request.UpdateDiaryReq;
 import com.capstone.Carvedream.domain.diary.dto.request.UseGptReq;
-import com.capstone.Carvedream.domain.diary.dto.response.CreateDiaryRes;
-import com.capstone.Carvedream.domain.diary.dto.response.FindDiaryRes;
-import com.capstone.Carvedream.domain.diary.dto.response.UpdateDiaryRes;
-import com.capstone.Carvedream.domain.diary.dto.response.UseGptRes;
+import com.capstone.Carvedream.domain.diary.dto.response.*;
 import com.capstone.Carvedream.global.config.security.token.CurrentUser;
 import com.capstone.Carvedream.global.config.security.token.UserPrincipal;
 import com.capstone.Carvedream.global.payload.CommonDto;
@@ -131,6 +128,20 @@ public class DiaryController {
             @Parameter(description = "img의 url") @RequestPart(value = "img", required = false) MultipartFile imageUrl
     ) throws IOException {
         return ResponseEntity.ok(diaryService.createImage(userPrincipal, diaryId, imageUrl));
+    }
+
+    // 태그 검색
+    @Operation(summary = "태그 검색", description = "검색어가 태그로 포함된 일기를 모두 불러옵니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = FindDiaryRes.class) ) } ),
+            @ApiResponse(responseCode = "400", description = "조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    })
+    @GetMapping("/tag")
+    public ResponseEntity<CommonDto> searchTag (
+            @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @RequestParam(value = "tag") String tag
+    ) {
+        return ResponseEntity.ok(diaryService.searchTag(userPrincipal, tag));
     }
 
 }

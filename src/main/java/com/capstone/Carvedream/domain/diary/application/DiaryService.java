@@ -28,6 +28,7 @@ import java.time.YearMonth;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @RequiredArgsConstructor
 @Service
@@ -231,6 +232,31 @@ public class DiaryService {
         LocalDate end = yearMonth.atEndOfMonth();
 
         return diaryRepository.findAllByUserAndDateBetween(user, start, end);
+    }
+
+    // 태그 검색
+    public CommonDto searchTag(UserPrincipal userPrincipal, String tags) {
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(InvalidUserException::new);
+
+        List<Diary> diaryList = diaryRepository.findAllByUserAndTagsContaining(user, tags);
+
+        List<FindDiaryRes> findDiaryRes = diaryList.stream()
+                .filter(diary -> diary.getTags().contains(tags))
+                .map(diary -> FindDiaryRes.builder()
+                        .id(diary.getId())
+                        .title(diary.getTitle())
+                        .content(diary.getContent())
+                        .date(diary.getDate())
+                        .emotion(diary.getEmotion())
+                        .image_url(diary.getImage_url())
+                        .end_sleep(diary.getEnd_sleep())
+                        .start_sleep(diary.getStart_sleep())
+                        .tags(diary.getTags())
+                        .interpretation(diary.getInterpretation())
+                        .build())
+                .toList();
+
+        return new CommonDto(true, findDiaryRes);
     }
 
 }
