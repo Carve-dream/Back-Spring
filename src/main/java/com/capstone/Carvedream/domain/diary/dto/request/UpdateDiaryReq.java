@@ -3,10 +3,13 @@ package com.capstone.Carvedream.domain.diary.dto.request;
 import com.capstone.Carvedream.domain.diary.domain.Emotion;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.JoinColumn;
 import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Set;
 
 @Data
 @Schema(description = "UpdateDiaryRequest")
@@ -34,4 +37,8 @@ public class UpdateDiaryReq {
 
     @Schema(description = "감정", example = "THRILL")
     private Emotion emotion;
+
+    @CollectionTable(name = "diary_tags", joinColumns = @JoinColumn(name = "diary_id"))
+    @Schema(description = "태그", example = "[\"수정된태그1\", \"수정된태그2\"]")
+    private Set<String> tags;
 }
