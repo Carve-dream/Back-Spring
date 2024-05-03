@@ -11,6 +11,12 @@ import com.capstone.Carvedream.domain.GPT.domain.repository.GPTAnswerRepository;
 import com.capstone.Carvedream.domain.GPT.domain.repository.GPTQuestionRepository;
 import com.capstone.Carvedream.domain.GPT.dto.request.ChatReq;
 import com.capstone.Carvedream.domain.GPT.dto.response.ChatRes;
+import com.capstone.Carvedream.domain.diary.domain.Diary;
+import com.capstone.Carvedream.domain.diary.domain.repository.DiaryRepository;
+import com.capstone.Carvedream.domain.diary.dto.request.UseGptReq;
+import com.capstone.Carvedream.domain.diary.dto.response.UseGptRes;
+import com.capstone.Carvedream.domain.diary.exception.InvalidDiaryException;
+import com.capstone.Carvedream.domain.user.domain.User;
 import com.capstone.Carvedream.domain.user.domain.repository.UserRepository;
 import com.capstone.Carvedream.domain.user.exception.InvalidUserException;
 import com.capstone.Carvedream.global.config.security.token.UserPrincipal;
@@ -20,6 +26,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
@@ -28,6 +35,7 @@ public class GPTService {
     private final GPTQuestionRepository questionRepository;
     private final GPTAnswerRepository answerRepository;
     private final UserRepository userRepository;
+    private final DiaryRepository diaryRepository;
 
     @Value("${gpt.apiKey}")
     private String API_KEY;
@@ -53,6 +61,21 @@ public class GPTService {
         answerRepository.save(answer);
 
         return new CommonDto(true, new ChatRes(output));
+    }
+
+    // 해몽하기
+    @Transactional
+    public CommonDto interpret(UserPrincipal userPrincipal, UseGptReq useGptReq) {
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(InvalidUserException::new);
+
+        String result = callChatGptApi(useGptReq.getContent() + ". 이 꿈 해몽해줘.");
+
+        if (useGptReq.getId() != 0) {
+            Diary diary = diaryRepository.findByIdAndUser(userPrincipal.getId(), user).orElseThrow(InvalidDiaryException::new);
+            diary.updateInterpretation(result);
+        }
+
+        return new CommonDto(true, new UseGptRes(result));
     }
 
     //GPT API 호출해서 응답 가져오는 메소드
