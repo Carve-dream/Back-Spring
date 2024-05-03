@@ -61,9 +61,11 @@ jobs:
       - name: docker pull
         run: sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/carvedream
 
-      # 2. 기존의 컨테이너를 중지시킵니다
-      - name: docker stop container
-        run: sudo docker stop $(sudo docker ps -q) 2>/dev/null || true
+    # 2. 기존의 컨테이너를 중지하고 삭제합니다
+      - name: docker stop and remove container
+        run: |
+          sudo docker stop carvedream 2>/dev/null || true
+          sudo docker rm carvedream 2>/dev/null || true
 
       # 3. 최신 이미지를 컨테이너화하여 실행시킵니다
       - name: docker run new container
