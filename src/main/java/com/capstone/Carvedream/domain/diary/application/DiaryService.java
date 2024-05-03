@@ -6,7 +6,6 @@ import com.capstone.Carvedream.domain.diary.domain.repository.DiaryRepository;
 import com.capstone.Carvedream.domain.diary.dto.request.CreateDiaryReq;
 import com.capstone.Carvedream.domain.diary.dto.request.CreateImageReq;
 import com.capstone.Carvedream.domain.diary.dto.request.UpdateDiaryReq;
-import com.capstone.Carvedream.domain.diary.dto.request.UseGptReq;
 import com.capstone.Carvedream.domain.diary.dto.response.*;
 import com.capstone.Carvedream.domain.diary.exception.InvalidDiaryException;
 import com.capstone.Carvedream.domain.user.domain.User;
@@ -18,15 +17,12 @@ import com.capstone.Carvedream.global.payload.CommonDto;
 import com.capstone.Carvedream.global.payload.Message;
 import com.theokanning.openai.image.CreateImageRequest;
 import com.theokanning.openai.service.OpenAiService;
-import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 import com.deepl.api.*;
 
 import java.io.IOException;
@@ -44,7 +40,6 @@ public class DiaryService {
     private final UserRepository userRepository;
     private final DiaryRepository diaryRepository;
     private final S3Uploader s3Uploader;
-//    @Resource(name = "getOpenAiService")
     private final OpenAiService openAiService;
     @Value("${deepL.apiKey}")
     private String deepLApiKey;
@@ -156,23 +151,6 @@ public class DiaryService {
         return new CommonDto(true, findDiaryRes);
     }
 
-    // 해몽하기
-    @Transactional
-    public CommonDto interpret(UserPrincipal userPrincipal, UseGptReq useGptReq) {
-        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(InvalidUserException::new);
-
-        //TODO 해몽 로직
-        //GPT 사용
-        String result = "해몽 결과 들어갈 문자열";
-
-        if (useGptReq.getId() != 0) {
-            Diary diary = diaryRepository.findByIdAndUser(userPrincipal.getId(), user).orElseThrow(InvalidDiaryException::new);
-            diary.updateInterpretation(result);
-        }
-
-        return new CommonDto(true, new UseGptRes(result));
-    }
-
     // 이미지화하기
     @Transactional
     public CommonDto createImage(UserPrincipal userPrincipal, CreateImageReq createImageReq) throws IOException, DeepLException, InterruptedException {
@@ -183,7 +161,7 @@ public class DiaryService {
         TextResult engContent = translator.translateText(createImageReq.getContent(), null, "en-US");
 
         CreateImageRequest createImageRequest = CreateImageRequest.builder()
-                .prompt(engContent.getText())
+                .prompt(engContent.getText())  //영문 번역된 꿈 내용
                 .size("512x512")
                 .n(1)
                 .build();

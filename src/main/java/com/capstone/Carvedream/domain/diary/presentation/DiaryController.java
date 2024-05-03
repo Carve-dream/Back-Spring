@@ -1,5 +1,6 @@
 package com.capstone.Carvedream.domain.diary.presentation;
 
+import com.capstone.Carvedream.domain.GPT.application.GPTService;
 import com.capstone.Carvedream.domain.diary.application.DiaryService;
 import com.capstone.Carvedream.domain.diary.dto.request.CreateDiaryReq;
 import com.capstone.Carvedream.domain.diary.dto.request.CreateImageReq;
@@ -34,6 +35,7 @@ import java.io.IOException;
 public class DiaryController {
 
     private final DiaryService diaryService;
+    private final GPTService gptService;
 
     //꿈 일기 저장
     @Operation(summary = "꿈 일기 저장", description = "오늘 기준 꿈 일기를 저장합니다.")
@@ -115,7 +117,7 @@ public class DiaryController {
             @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
             @Valid @RequestBody UseGptReq useGptReq
     ) {
-        return ResponseEntity.ok(diaryService.interpret(userPrincipal, useGptReq));
+        return ResponseEntity.ok(gptService.interpret(userPrincipal, useGptReq));
     }
 
     @Operation(summary = "이미지화하기", description = "문자열에 대한 이미지url 결과를 보여줍니다. (작성한 일기가 없다면 id는 0으로)")
