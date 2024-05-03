@@ -4,6 +4,7 @@ import com.capstone.Carvedream.domain.diary.domain.Diary;
 import com.capstone.Carvedream.domain.diary.domain.Emotion;
 import com.capstone.Carvedream.domain.diary.domain.repository.DiaryRepository;
 import com.capstone.Carvedream.domain.diary.dto.request.CreateDiaryReq;
+import com.capstone.Carvedream.domain.diary.dto.request.CreateImageReq;
 import com.capstone.Carvedream.domain.diary.dto.request.UpdateDiaryReq;
 import com.capstone.Carvedream.domain.diary.dto.request.UseGptReq;
 import com.capstone.Carvedream.domain.diary.dto.response.*;
@@ -15,12 +16,18 @@ import com.capstone.Carvedream.global.config.security.token.UserPrincipal;
 import com.capstone.Carvedream.global.infrastructure.S3Uploader;
 import com.capstone.Carvedream.global.payload.CommonDto;
 import com.capstone.Carvedream.global.payload.Message;
+import com.theokanning.openai.image.CreateImageRequest;
+import com.theokanning.openai.service.OpenAiService;
+import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import com.deepl.api.*;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -37,6 +44,10 @@ public class DiaryService {
     private final UserRepository userRepository;
     private final DiaryRepository diaryRepository;
     private final S3Uploader s3Uploader;
+//    @Resource(name = "getOpenAiService")
+    private final OpenAiService openAiService;
+    @Value("${deepL.apiKey}")
+    private String deepLApiKey;
 
     // 꿈 일기 생성
     @Transactional
@@ -164,19 +175,23 @@ public class DiaryService {
 
     // 이미지화하기
     @Transactional
-    public CommonDto createImage(UserPrincipal userPrincipal, Long diaryId, MultipartFile imageUrl) throws IOException {
+    public CommonDto createImage(UserPrincipal userPrincipal, CreateImageReq createImageReq) throws IOException, DeepLException, InterruptedException {
         User user = userRepository.findById(userPrincipal.getId()).orElseThrow(InvalidUserException::new);
+        //영어로 번역
+        Translator translator;
+        translator = new Translator(deepLApiKey);
+        TextResult engContent = translator.translateText(createImageReq.getContent(), null, "en-US");
 
-        //TODO 이미지화 로직
-        //GPT 사용
-        String result = "이미지 url 결과 들어갈 문자열";
-        // img가 비어있는지 체크
-        // 업로드할 디렉토리 이름 설정 (record의 이미지는 record_img, 프로필의 이미지는 profile_img
-        if (imageUrl != null) {
-            result = s3Uploader.upload(imageUrl, "dream");
-        }
+        CreateImageRequest createImageRequest = CreateImageRequest.builder()
+                .prompt(engContent.getText())
+                .size("512x512")
+                .n(1)
+                .build();
 
-        if (diaryId != 0) {
+        String imageUrl = openAiService.createImage(createImageRequest).getData().get(0).getUrl();
+        String result = s3Uploader.uploadFromUrl(imageUrl, "dream");
+
+        if (createImageReq.getId() != 0) {
             Diary diary = diaryRepository.findByIdAndUser(userPrincipal.getId(), user).orElseThrow(InvalidDiaryException::new);
             diary.updateImageUrl(result);
         }
