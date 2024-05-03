@@ -1,7 +1,9 @@
 package com.capstone.Carvedream.domain.diary.presentation;
 
+import com.capstone.Carvedream.domain.GPT.application.GPTService;
 import com.capstone.Carvedream.domain.diary.application.DiaryService;
 import com.capstone.Carvedream.domain.diary.dto.request.CreateDiaryReq;
+import com.capstone.Carvedream.domain.diary.dto.request.CreateImageReq;
 import com.capstone.Carvedream.domain.diary.dto.request.UpdateDiaryReq;
 import com.capstone.Carvedream.domain.diary.dto.request.UseGptReq;
 import com.capstone.Carvedream.domain.diary.dto.response.*;
@@ -10,6 +12,7 @@ import com.capstone.Carvedream.global.config.security.token.UserPrincipal;
 import com.capstone.Carvedream.global.payload.CommonDto;
 import com.capstone.Carvedream.global.payload.ErrorResponse;
 import com.capstone.Carvedream.global.payload.Message;
+import com.deepl.api.DeepLException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -32,6 +35,7 @@ import java.io.IOException;
 public class DiaryController {
 
     private final DiaryService diaryService;
+    private final GPTService gptService;
 
     //꿈 일기 저장
     @Operation(summary = "꿈 일기 저장", description = "오늘 기준 꿈 일기를 저장합니다.")
@@ -113,7 +117,7 @@ public class DiaryController {
             @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
             @Valid @RequestBody UseGptReq useGptReq
     ) {
-        return ResponseEntity.ok(diaryService.interpret(userPrincipal, useGptReq));
+        return ResponseEntity.ok(gptService.interpret(userPrincipal, useGptReq));
     }
 
     @Operation(summary = "이미지화하기", description = "문자열에 대한 이미지url 결과를 보여줍니다. (작성한 일기가 없다면 id는 0으로)")
@@ -121,13 +125,12 @@ public class DiaryController {
             @ApiResponse(responseCode = "200", description = "이미지화 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = UseGptRes.class) ) } ),
             @ApiResponse(responseCode = "400", description = "이미지화 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
     })
-    @PostMapping("/image/{diaryId}")
+    @PostMapping("/image")
     public ResponseEntity<CommonDto> createImage (
             @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
-            @PathVariable(value = "diaryId") Long diaryId,
-            @Parameter(description = "img의 url") @RequestPart(value = "img", required = false) MultipartFile imageUrl
-    ) throws IOException {
-        return ResponseEntity.ok(diaryService.createImage(userPrincipal, diaryId, imageUrl));
+            @Valid @RequestBody CreateImageReq createImageReq
+    ) throws IOException, DeepLException, InterruptedException {
+        return ResponseEntity.ok(diaryService.createImage(userPrincipal, createImageReq));
     }
 
     // 태그 검색
