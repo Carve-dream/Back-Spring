@@ -7,9 +7,12 @@ import com.capstone.Carvedream.domain.auth.dto.request.RefreshTokenReq;
 import com.capstone.Carvedream.domain.auth.dto.request.SignInReq;
 import com.capstone.Carvedream.domain.auth.dto.request.SignUpReq;
 import com.capstone.Carvedream.domain.auth.dto.response.AuthRes;
+import com.capstone.Carvedream.domain.diary.domain.repository.DiaryRepository;
+import com.capstone.Carvedream.domain.fortune.domain.repository.FortuneRepository;
 import com.capstone.Carvedream.domain.user.domain.Role;
 import com.capstone.Carvedream.domain.user.domain.User;
 import com.capstone.Carvedream.domain.user.domain.repository.UserRepository;
+import com.capstone.Carvedream.domain.user.exception.InvalidUserException;
 import com.capstone.Carvedream.global.DefaultAssert;
 import com.capstone.Carvedream.global.payload.Message;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +48,8 @@ public class AuthService {
     
     private final UserRepository userRepository;
     private final TokenRepository tokenRepository;
+    private final DiaryRepository diaryRepository;
+    private final FortuneRepository fortuneRepository;
     @Value("${gpt.apiKey}")
     private String API_KEY;
     @Value("${gpt.openAIBeta}")
@@ -140,7 +145,10 @@ public class AuthService {
         DefaultAssert.isAuthentication(checkValid);
 
         Optional<Token> token = tokenRepository.findByRefreshToken(tokenRefreshRequest.getRefreshToken());
-        userRepository.deleteByEmail(token.get().getUserEmail());
+        User user = userRepository.findByEmail(token.get().getUserEmail()).orElseThrow(InvalidUserException::new);
+        diaryRepository.deleteAllByUser(user);
+        fortuneRepository.deleteAllByUser(user);
+        userRepository.delete(user);
         tokenRepository.delete(token.get());
         return Message.builder().message("탈퇴 하였습니다.").build();
     }

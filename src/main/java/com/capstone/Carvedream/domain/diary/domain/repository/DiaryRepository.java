@@ -23,4 +23,6 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
 
     List<Diary> findAllByUserAndTagsContaining(User user, String tags);
 
+    void deleteAllByUser(User user);
+
 }
