@@ -128,8 +128,8 @@ public class GPTService {
                     response.append(responseLine.trim());
                 }
 //                System.out.println("createRun : " + response.toString());
-                // API 응답 처리 후 1초 대기
-                Thread.sleep(1000);
+                // API 응답 처리 후 5초 대기 (너무 짧으면 긴 응답은 생성 전에 반환되는 문제 발생)
+                Thread.sleep(5000);
             }
         } finally {
             conn.disconnect();
@@ -157,7 +157,7 @@ public class GPTService {
                 while ((responseLine = br.readLine()) != null) {
                     response.append(responseLine.trim());
                 }
-//                System.out.println("getResponse: " + response.toString());
+                System.out.println("getResponse: " + response.toString());
 
                 // 응답을 JSON으로 파싱하고 content 추출
                 JSONObject jsonResponse = new JSONObject(response.toString());
