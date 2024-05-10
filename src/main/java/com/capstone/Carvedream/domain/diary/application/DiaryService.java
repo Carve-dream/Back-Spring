@@ -154,7 +154,6 @@ public class DiaryService {
 
     // 이미지화하기
     @Transactional
-    @Async
     public CommonDto createImage(UserPrincipal userPrincipal, CreateImageReq createImageReq) throws IOException, DeepLException, InterruptedException {
         User user = userRepository.findById(userPrincipal.getId()).orElseThrow(InvalidUserException::new);
         //영어로 번역
