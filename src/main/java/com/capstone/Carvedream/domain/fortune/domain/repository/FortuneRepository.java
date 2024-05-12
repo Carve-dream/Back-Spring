@@ -11,4 +11,6 @@ import org.springframework.stereotype.Repository;
 public interface FortuneRepository extends JpaRepository<Fortune, Long> {
 
     Page<Fortune> findAllByUser(User user, PageRequest pageRequest);
+
+    void deleteAllByUser(User user);
 }

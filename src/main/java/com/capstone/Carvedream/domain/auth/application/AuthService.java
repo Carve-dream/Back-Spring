@@ -7,12 +7,17 @@ import com.capstone.Carvedream.domain.auth.dto.request.RefreshTokenReq;
 import com.capstone.Carvedream.domain.auth.dto.request.SignInReq;
 import com.capstone.Carvedream.domain.auth.dto.request.SignUpReq;
 import com.capstone.Carvedream.domain.auth.dto.response.AuthRes;
+import com.capstone.Carvedream.domain.diary.domain.repository.DiaryRepository;
+import com.capstone.Carvedream.domain.fortune.domain.repository.FortuneRepository;
 import com.capstone.Carvedream.domain.user.domain.Role;
 import com.capstone.Carvedream.domain.user.domain.User;
 import com.capstone.Carvedream.domain.user.domain.repository.UserRepository;
+import com.capstone.Carvedream.domain.user.exception.InvalidUserException;
 import com.capstone.Carvedream.global.DefaultAssert;
 import com.capstone.Carvedream.global.payload.Message;
 import lombok.RequiredArgsConstructor;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -22,7 +27,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.URL;
 import java.util.Optional;
 
 
@@ -38,6 +48,12 @@ public class AuthService {
     
     private final UserRepository userRepository;
     private final TokenRepository tokenRepository;
+    private final DiaryRepository diaryRepository;
+    private final FortuneRepository fortuneRepository;
+    @Value("${gpt.apiKey}")
+    private String API_KEY;
+    @Value("${gpt.openAIBeta}")
+    private String OPEN_AI_BETA;
 
     //로그인
     @Transactional
@@ -62,7 +78,7 @@ public class AuthService {
 
     //회원가입
     @Transactional
-    public Message signup(SignUpReq signUpRequest){
+    public Message signup(SignUpReq signUpRequest) throws Exception {
         DefaultAssert.isTrue(!userRepository.existsByEmail(signUpRequest.getEmail()), "이미 존재하는 이메일입니다.");
 
         User user = User.builder()
@@ -72,6 +88,7 @@ public class AuthService {
                         .role(Role.ADMIN)
                         .birthDate(signUpRequest.getBirthDate())
                         .gender(signUpRequest.getGender())
+                        .threadId(createThread())
                         .build();
 
         userRepository.save(user);
@@ -128,7 +145,10 @@ public class AuthService {
         DefaultAssert.isAuthentication(checkValid);
 
         Optional<Token> token = tokenRepository.findByRefreshToken(tokenRefreshRequest.getRefreshToken());
-        userRepository.deleteByEmail(token.get().getUserEmail());
+        User user = userRepository.findByEmail(token.get().getUserEmail()).orElseThrow(InvalidUserException::new);
+        diaryRepository.deleteAllByUser(user);
+        fortuneRepository.deleteAllByUser(user);
+        userRepository.delete(user);
         tokenRepository.delete(token.get());
         return Message.builder().message("탈퇴 하였습니다.").build();
     }
@@ -151,4 +171,50 @@ public class AuthService {
         return true;
     }
 
+    private String createThread() throws Exception {
+
+        String createThreadURL = "https://api.openai.com/v1/threads";
+
+        // URL 객체 생성
+        URL url = new URL(createThreadURL);
+
+        // HttpURLConnection 객체 생성 및 설정
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Content-Type", "application/json");
+        conn.setRequestProperty("Authorization", "Bearer " + API_KEY);
+        conn.setRequestProperty("OpenAI-Beta", OPEN_AI_BETA);
+        conn.setDoOutput(true);
+
+        // 빈 JSON 데이터를 요청 본문에 작성
+        String jsonInputString = "{}";
+        try (OutputStream os = conn.getOutputStream()) {
+            byte[] input = jsonInputString.getBytes("utf-8");
+            os.write(input, 0, input.length);
+        }
+
+        String threadId = null;
+
+        int responseCode = conn.getResponseCode();
+        if (responseCode == HttpURLConnection.HTTP_OK) {
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"))) {
+                StringBuilder response = new StringBuilder();
+                String responseLine;
+                while ((responseLine = br.readLine()) != null) {
+                    response.append(responseLine.trim());
+                }
+
+                // 응답을 JSON으로 파싱하고 thread ID 추출
+                JSONObject jsonResponse = new JSONObject(response.toString());
+                threadId = jsonResponse.optString("id", "No Thread ID Found");
+                System.out.println("Thread ID: " + threadId);
+            }
+        } else {
+            System.out.println("Error Response Code: " + responseCode);
+        }
+
+        // 리소스 해제
+        conn.disconnect();
+        return threadId;
+    }
 }
