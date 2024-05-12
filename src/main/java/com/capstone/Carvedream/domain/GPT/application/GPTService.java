@@ -7,8 +7,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import com.capstone.Carvedream.domain.GPT.dto.request.ChatReq;
 import com.capstone.Carvedream.domain.GPT.dto.response.ChatRes;
-import com.capstone.Carvedream.domain.GPT.exception.EmptyContentException;
-import com.capstone.Carvedream.domain.GPT.exception.InvalidRoleException;
+import com.capstone.Carvedream.domain.GPT.exception.InvalidChatException;
 import com.capstone.Carvedream.domain.diary.domain.Diary;
 import com.capstone.Carvedream.domain.diary.domain.repository.DiaryRepository;
 import com.capstone.Carvedream.domain.diary.dto.request.UseGptReq;
@@ -83,7 +82,7 @@ public class GPTService {
             }
 
             if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                throw new RuntimeException("Failed to add message");
+                throw new InvalidChatException("Failed to add message");
             }
 
             try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"))) {
@@ -118,7 +117,7 @@ public class GPTService {
             }
 
             if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                throw new RuntimeException("Failed to create run");
+                throw new InvalidChatException("Failed to create run");
             }
 
             try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"))) {
@@ -139,45 +138,48 @@ public class GPTService {
     // 응답 수신
     private String getResponse(String threadId) throws Exception {
         String getMessagesURL = "https://api.openai.com/v1/threads/" + threadId + "/messages";
-        URL url = new URL(getMessagesURL);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        try {
-            conn.setRequestMethod("GET");
-            conn.setRequestProperty("Content-Type", "application/json");
-            conn.setRequestProperty("Authorization", "Bearer " + API_KEY);
-            conn.setRequestProperty("OpenAI-Beta", OPEN_AI_BETA);
+        Boolean retry = true;
+        while(retry) {
+            URL url = new URL(getMessagesURL);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            try {
+                conn.setRequestMethod("GET");
+                conn.setRequestProperty("Content-Type", "application/json");
+                conn.setRequestProperty("Authorization", "Bearer " + API_KEY);
+                conn.setRequestProperty("OpenAI-Beta", OPEN_AI_BETA);
 
-            if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                throw new RuntimeException("Failed to get response");
+                if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                    throw new InvalidChatException("Failed to get response");
+                }
+
+                try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"))) {
+                    StringBuilder response = new StringBuilder();
+                    String responseLine;
+                    while ((responseLine = br.readLine()) != null) {
+                        response.append(responseLine.trim());
+                    }
+                    System.out.println("getResponse: " + response.toString());
+
+                    // 응답을 JSON으로 파싱하고 content 추출
+                    JSONObject jsonResponse = new JSONObject(response.toString());
+                    JSONArray data = jsonResponse.getJSONArray("data");
+                    JSONObject dataObject = data.getJSONObject(0);
+                    String role = dataObject.getString("role");
+                    JSONArray content = dataObject.getJSONArray("content");
+                    if (role.equals("user") || (content != null && content.isEmpty())) {
+                        retry = true;
+                    } else {
+                        JSONObject contentObject = content.getJSONObject(0);
+                        JSONObject text = contentObject.getJSONObject("text");
+                        retry = false;
+                        return text.getString("value");
+                    }
+                }
+            } finally {
+                conn.disconnect();
             }
-
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"))) {
-                StringBuilder response = new StringBuilder();
-                String responseLine;
-                while ((responseLine = br.readLine()) != null) {
-                    response.append(responseLine.trim());
-                }
-                System.out.println("getResponse: " + response.toString());
-
-                // 응답을 JSON으로 파싱하고 content 추출
-                JSONObject jsonResponse = new JSONObject(response.toString());
-                JSONArray data = jsonResponse.getJSONArray("data");
-                JSONObject dataObject = data.getJSONObject(0);
-                String role = dataObject.getString("role");
-                if (role.equals("user")) {
-                    throw new InvalidRoleException();
-                }
-                JSONArray content = dataObject.getJSONArray("content");
-                if (content.isEmpty()) {
-                    throw new EmptyContentException();
-                }
-                JSONObject contentObject = content.getJSONObject(0);
-                JSONObject text = contentObject.getJSONObject("text");
-                return text.getString("value");
-            }
-        } finally {
-            conn.disconnect();
         }
+        throw new InvalidChatException();
     }
 
     // 해몽하기
