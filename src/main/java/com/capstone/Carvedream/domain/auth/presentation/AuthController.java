@@ -48,7 +48,7 @@ public class AuthController {
     @PostMapping(value = "/signup")
     public ResponseEntity<Message> signup(
         @Parameter(description = "Schemas의 SignUpRequest를 참고해주세요.", required = true) @Valid @RequestBody SignUpReq signUpRequest
-    ) {
+    ) throws Exception {
         return ResponseEntity.ok(authService.signup(signUpRequest));
     }
 

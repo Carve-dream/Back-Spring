@@ -35,8 +35,10 @@ public class User extends BaseEntity {
 
     private LocalDate birthDate;
 
+    private String threadId;
+
     @Builder
-    public User(Long id, String name, String email, String imageUrl, String password, Role role, Gender gender, LocalDate birthDate) {
+    public User(Long id, String name, String email, String imageUrl, String password, Role role, Gender gender, LocalDate birthDate, String threadId) {
         this.id = id;
         this.name = name;
         this.email = email;
@@ -45,6 +47,7 @@ public class User extends BaseEntity {
         this.role = role;
         this.gender = gender;
         this.birthDate = birthDate;
+        this.threadId = threadId;
     }
 
     public void updateName(String name){

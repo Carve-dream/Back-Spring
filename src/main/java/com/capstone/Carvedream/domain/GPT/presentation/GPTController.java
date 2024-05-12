@@ -2,11 +2,11 @@ package com.capstone.Carvedream.domain.GPT.presentation;
 
 import com.capstone.Carvedream.domain.GPT.application.GPTService;
 import com.capstone.Carvedream.domain.GPT.dto.request.ChatReq;
+import com.capstone.Carvedream.domain.GPT.dto.response.ChatRes;
 import com.capstone.Carvedream.global.config.security.token.CurrentUser;
 import com.capstone.Carvedream.global.config.security.token.UserPrincipal;
 import com.capstone.Carvedream.global.payload.CommonDto;
 import com.capstone.Carvedream.global.payload.ErrorResponse;
-import com.capstone.Carvedream.global.payload.Message;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -28,9 +28,9 @@ public class GPTController {
     private final GPTService gptService;
 
     //GPT 채팅
-    @Operation(summary = "GPT 채팅", description = "해몽 등 GPT와 채팅을 통해 대화합니다.")
+    @Operation(summary = "GPT 채팅", description = "GPT와 채팅을 통해 대화합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "채팅 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Message.class) ) } ),
+            @ApiResponse(responseCode = "200", description = "채팅 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ChatRes.class) ) } ),
             @ApiResponse(responseCode = "400", description = "채팅 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
     })
     @PostMapping

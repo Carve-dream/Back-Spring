@@ -5,12 +5,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import com.capstone.Carvedream.domain.GPT.domain.GPTAnswer;
-import com.capstone.Carvedream.domain.GPT.domain.GPTQuestion;
-import com.capstone.Carvedream.domain.GPT.domain.repository.GPTAnswerRepository;
-import com.capstone.Carvedream.domain.GPT.domain.repository.GPTQuestionRepository;
 import com.capstone.Carvedream.domain.GPT.dto.request.ChatReq;
 import com.capstone.Carvedream.domain.GPT.dto.response.ChatRes;
+import com.capstone.Carvedream.domain.GPT.exception.InvalidChatException;
 import com.capstone.Carvedream.domain.diary.domain.Diary;
 import com.capstone.Carvedream.domain.diary.domain.repository.DiaryRepository;
 import com.capstone.Carvedream.domain.diary.dto.request.UseGptReq;
@@ -32,8 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class GPTService {
 
-    private final GPTQuestionRepository questionRepository;
-    private final GPTAnswerRepository answerRepository;
     private final UserRepository userRepository;
     private final DiaryRepository diaryRepository;
 
@@ -41,26 +36,148 @@ public class GPTService {
     private String API_KEY;
     @Value("${gpt.model}")
     private String MODEL;
+    @Value("${gpt.assistantId}")
+    private String ASSISTANT_ID;
+    @Value("${gpt.openAIBeta}")
+    private String OPEN_AI_BETA;
 
-    //GPT 채팅
+    // GPT 채팅
     public CommonDto getChatResponseAndSave(UserPrincipal userPrincipal, ChatReq chatReq) {
-        userRepository.findById(userPrincipal.getId()).orElseThrow(InvalidUserException::new);
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(InvalidUserException::new);
         String input = chatReq.getQuestion();
+        String threadId = user.getThreadId();
 
-        String output = callChatGptApi(input);
-
-        GPTQuestion question = GPTQuestion.builder()
-                .content(input)
-                .build();
-        questionRepository.save(question);
-
-        GPTAnswer answer = GPTAnswer.builder()
-                .content(output)
-                .question(question)
-                .build();
-        answerRepository.save(answer);
-
+        String output = sendMessageAndGetResponse(threadId, input);
         return new CommonDto(true, new ChatRes(output));
+    }
+
+    // 채팅에 메시지를 추가하고 응답 반환 (이전 대화 기억O)
+    private String sendMessageAndGetResponse(String threadId, String input) {
+        try {
+            addMessage(threadId, input);
+            createRun(threadId);
+            return getResponse(threadId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    // 메시지 추가
+    private void addMessage(String threadId, String input) throws Exception {
+        String addMessageURL = "https://api.openai.com/v1/threads/" + threadId + "/messages";
+        URL url = new URL(addMessageURL);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        try {
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setRequestProperty("Authorization", "Bearer " + API_KEY);
+            conn.setRequestProperty("OpenAI-Beta", OPEN_AI_BETA);
+            conn.setDoOutput(true);
+
+            String jsonInputString = "{\"role\": \"user\", \"content\": \"" + input + "\"}";
+            try (OutputStream os = conn.getOutputStream()) {
+                byte[] inputBytes = jsonInputString.getBytes("utf-8");
+                os.write(inputBytes, 0, inputBytes.length);
+            }
+
+            if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                throw new InvalidChatException("Failed to add message");
+            }
+
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"))) {
+                StringBuilder response = new StringBuilder();
+                String responseLine;
+                while ((responseLine = br.readLine()) != null) {
+                    response.append(responseLine.trim());
+                }
+//                System.out.println("Response: " + conn.getResponseMessage());
+            }
+        } finally {
+            conn.disconnect();
+        }
+    }
+
+    // 실행 생성
+    private void createRun(String threadId) throws Exception {
+        String createRunURL = "https://api.openai.com/v1/threads/" + threadId + "/runs";
+        URL url = new URL(createRunURL);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        try {
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setRequestProperty("Authorization", "Bearer " + API_KEY);
+            conn.setRequestProperty("OpenAI-Beta", OPEN_AI_BETA);
+            conn.setDoOutput(true);
+
+            String jsonInputString = "{" + "\"assistant_id\": \"" + ASSISTANT_ID + "\"," + "\"instructions\": \"\"" + "}";
+            try (OutputStream os = conn.getOutputStream()) {
+                byte[] inputBytes = jsonInputString.getBytes("utf-8");
+                os.write(inputBytes, 0, inputBytes.length);
+            }
+
+            if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                throw new InvalidChatException("Failed to create run");
+            }
+
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"))) {
+                StringBuilder response = new StringBuilder();
+                String responseLine;
+                while ((responseLine = br.readLine()) != null) {
+                    response.append(responseLine.trim());
+                }
+//                System.out.println("createRun : " + response.toString());
+            }
+        } finally {
+            conn.disconnect();
+        }
+    }
+
+    // 응답 수신
+    private String getResponse(String threadId) throws Exception {
+        String getMessagesURL = "https://api.openai.com/v1/threads/" + threadId + "/messages";
+        Boolean retry = true;
+        while(retry) {
+            URL url = new URL(getMessagesURL);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            try {
+                conn.setRequestMethod("GET");
+                conn.setRequestProperty("Content-Type", "application/json");
+                conn.setRequestProperty("Authorization", "Bearer " + API_KEY);
+                conn.setRequestProperty("OpenAI-Beta", OPEN_AI_BETA);
+
+                if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                    throw new InvalidChatException("Failed to get response");
+                }
+
+                try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"))) {
+                    StringBuilder response = new StringBuilder();
+                    String responseLine;
+                    while ((responseLine = br.readLine()) != null) {
+                        response.append(responseLine.trim());
+                    }
+                    System.out.println("getResponse: " + response.toString());
+
+                    // 응답을 JSON으로 파싱하고 content 추출
+                    JSONObject jsonResponse = new JSONObject(response.toString());
+                    JSONArray data = jsonResponse.getJSONArray("data");
+                    JSONObject dataObject = data.getJSONObject(0);
+                    String role = dataObject.getString("role");
+                    JSONArray content = dataObject.getJSONArray("content");
+                    if (role.equals("user") || (content != null && content.isEmpty())) {
+                        retry = true;
+                    } else {
+                        JSONObject contentObject = content.getJSONObject(0);
+                        JSONObject text = contentObject.getJSONObject("text");
+                        retry = false;
+                        return text.getString("value");
+                    }
+                }
+            } finally {
+                conn.disconnect();
+            }
+        }
+        throw new InvalidChatException();
     }
 
     // 해몽하기
@@ -78,7 +195,7 @@ public class GPTService {
         return new CommonDto(true, new UseGptRes(result));
     }
 
-    //GPT API 호출해서 응답 가져오는 메소드
+    // 해몽 GPT API 호출해서 응답 반환 (이전 대화 기억X)
     private String callChatGptApi(String input) {
         try {
             URL url = new URL("https://api.openai.com/v1/chat/completions");
