@@ -127,8 +127,6 @@ public class GPTService {
                     response.append(responseLine.trim());
                 }
 //                System.out.println("createRun : " + response.toString());
-                // API 응답 처리 후 5초 대기 (너무 짧으면 긴 응답은 생성 전에 반환되는 문제 발생)
-                Thread.sleep(5000);
             }
         } finally {
             conn.disconnect();
