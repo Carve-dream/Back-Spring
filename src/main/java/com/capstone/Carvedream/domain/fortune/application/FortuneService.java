@@ -1,6 +1,5 @@
 package com.capstone.Carvedream.domain.fortune.application;
 
-import com.capstone.Carvedream.domain.diary.domain.Diary;
 import com.capstone.Carvedream.domain.diary.domain.repository.DiaryRepository;
 import com.capstone.Carvedream.domain.fortune.Exception.InvalidFortuneException;
 import com.capstone.Carvedream.domain.fortune.domain.Fortune;
@@ -54,8 +53,9 @@ public class FortuneService {
             throw new InvalidFortuneException("오늘의 포춘쿠키는 이미 생성되었습니다.");
         }
 
-        List<Diary> recentDiaries = diaryRepository.findTop5ByUserOrderByIdDesc(user);
-        String fortuneContent = generateFortuneContentFromDiaries(recentDiaries);
+        List<String> recentInterpretations = diaryRepository.findTop5InterpretationsByUserOrderByIdDesc(user);
+        String fortuneContent = generateFortuneContentFromInterpretations(recentInterpretations);
+
 
         Fortune fortune = Fortune.builder()
                 .user(user)
@@ -65,6 +65,17 @@ public class FortuneService {
         fortuneRepository.save(fortune);
 
         return new CommonDto(true, fortuneContent);
+    }
+
+    private String generateFortuneContentFromInterpretations(List<String> recentInterpretations) {
+        String prompt = "최근 해몽 기록을 바탕으로 사용자에게 조언을 해주세요:\n";
+        for (String interpretation : recentInterpretations) {
+            prompt += interpretation + "\n";
+        }
+
+        String fortuneContent = callChatGptApi(prompt);
+
+        return fortuneContent != null ? fortuneContent : "오늘의 포춘쿠키는 쉬어가는 것이 어떨까요? 너무 무리하지 마세요.";
     }
 
     // 유저의 모든 포춘쿠키 조회
@@ -82,17 +93,6 @@ public class FortuneService {
         ).toList();
 
         return new CommonDto(true, findFortuneRes);
-    }
-
-    private String generateFortuneContentFromDiaries(List<Diary> recentDiaries) {
-        String prompt = "최근 해몽 기록을 바탕으로 사용자에게 조언을 해주세요:\n";
-        for (Diary diary : recentDiaries) {
-            prompt += diary.getInterpretation() + "\n";
-        }
-
-        String fortuneContent = callChatGptApi(prompt);
-
-        return fortuneContent != null ? fortuneContent : "오늘의 포춘쿠키는 쉬어가는 것이 어떨까요? 너무 무리하지 마세요.";
     }
 
     // 포춘쿠키 생성을 위해 GPT API 호출해서 응답 반환
