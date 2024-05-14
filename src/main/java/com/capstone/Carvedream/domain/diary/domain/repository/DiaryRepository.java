@@ -27,8 +27,6 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
 
     void deleteAllByUser(User user);
 
-    List<Diary> findTop5ByUserOrderByIdDesc(User user);
-
     @Query("SELECT d.interpretation FROM Diary d WHERE d.user = :user AND d.interpretation IS NOT NULL ORDER BY d.id DESC LIMIT 5")
     List<String> findTop5InterpretationsByUserOrderByIdDesc(@Param("user") User user);
 }
