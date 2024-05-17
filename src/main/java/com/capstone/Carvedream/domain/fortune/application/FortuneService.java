@@ -54,29 +54,32 @@ public class FortuneService {
         }
 
         List<String> recentInterpretations = diaryRepository.findTop5InterpretationsByUserOrderByIdDesc(user);
-        String fortuneContent = generateFortuneContentFromInterpretations(recentInterpretations);
-
+        String fortuneContent = getFortuneFromInterpretations(recentInterpretations);
 
         Fortune fortune = Fortune.builder()
                 .user(user)
                 .content(fortuneContent)
                 .build();
 
-        fortuneRepository.save(fortune);
+        Fortune savedFortune = fortuneRepository.save(fortune);
 
-        return new CommonDto(true, fortuneContent);
+        return new CommonDto(true, FindFortuneRes.builder()
+                .id(savedFortune.getId())
+                .createAt(savedFortune.getCreatedDate())
+                .content(savedFortune.getContent())
+                .build());
     }
 
-    private String generateFortuneContentFromInterpretations(List<String> recentInterpretations) {
-        String prompt = "최근 해몽 기록을 바탕으로 사용자에게 조언을 해주세요:\n";
+    // GPT에게 요청
+    private String getFortuneFromInterpretations(List<String> recentInterpretations) {
+        String prompt = "다음 해몽 기록을 바탕으로 사용자에게 한 문장으로 간단하게 조언 해주세요:\n";
         for (String interpretation : recentInterpretations) {
             prompt += interpretation + "\n";
         }
 
-        String fortuneContent = callChatGptApi(prompt);
-
-        return fortuneContent != null ? fortuneContent : "오늘의 포춘쿠키는 쉬어가는 것이 어떨까요? 너무 무리하지 마세요.";
+        return callChatGptApi(prompt);
     }
+
 
     // 유저의 모든 포춘쿠키 조회
     public CommonDto findAllFortune(UserPrincipal userPrincipal, Integer page) {
@@ -105,9 +108,20 @@ public class FortuneService {
             conn.setRequestProperty("Content-Type", "application/json");
             conn.setRequestProperty("Authorization", "Bearer " + API_KEY);
 
-            String requestBody = "{\"model\": \"" + MODEL + "\", \"messages\": [{\"role\": \"user\", \"content\": \"" + prompt + "\"}], \"temperature\": 0.7}";
+            JSONObject requestBody = new JSONObject();
+            requestBody.put("model", MODEL);
+
+            JSONArray messages = new JSONArray();
+            JSONObject message = new JSONObject();
+            message.put("role", "user");
+            message.put("content", prompt);
+            messages.put(message);
+
+            requestBody.put("messages", messages);
+            requestBody.put("temperature", 0.7);
+
             OutputStream outputStream = conn.getOutputStream();
-            outputStream.write(requestBody.getBytes());
+            outputStream.write(requestBody.toString().getBytes());
             outputStream.flush();
             outputStream.close();
 
@@ -120,14 +134,15 @@ public class FortuneService {
             reader.close();
             conn.disconnect();
 
+            System.out.println("API Response: " + response);
+
             // JSON 파싱
             JSONObject json = new JSONObject(response.toString());
             JSONArray choices = json.getJSONArray("choices");
-            if (choices != null && !choices.isEmpty()) {
+            if (!choices.isEmpty()) {
                 JSONObject firstChoice = choices.getJSONObject(0);
-                JSONObject message = firstChoice.getJSONObject("message");
-                String content = message.getString("content");
-                return content.trim();
+                String content = firstChoice.getJSONObject("message").getString("content").trim();
+                return content;
             }
             return null;
 
