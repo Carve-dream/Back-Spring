@@ -54,7 +54,7 @@ jobs:
 
   run-docker-image-on-ec2:
     needs: build-docker-image
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       # 1. 최신 이미지를 풀받습니다
