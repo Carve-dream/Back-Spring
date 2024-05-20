@@ -50,11 +50,9 @@ public class User extends BaseEntity {
         this.threadId = threadId;
     }
 
-    public void updateName(String name){
+    public void updateUser(String name, Gender gender, LocalDate birthDate){
         this.name = name;
-    }
-
-    public void updateImageUrl(String imageUrl){
-        this.imageUrl = imageUrl;
+        this.gender = gender;
+        this.birthDate = birthDate;
     }
 }

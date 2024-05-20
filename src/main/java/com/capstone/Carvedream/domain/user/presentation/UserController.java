@@ -2,6 +2,7 @@ package com.capstone.Carvedream.domain.user.presentation;
 
 import com.capstone.Carvedream.domain.user.application.UserService;
 import com.capstone.Carvedream.domain.user.domain.User;
+import com.capstone.Carvedream.domain.user.dto.UpdateUserReq;
 import com.capstone.Carvedream.global.config.security.token.CurrentUser;
 import com.capstone.Carvedream.global.config.security.token.UserPrincipal;
 import com.capstone.Carvedream.global.payload.CommonDto;
@@ -13,11 +14,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "User", description = "유저 API")
 @RequiredArgsConstructor
@@ -37,5 +37,18 @@ public class UserController {
             @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal
     ) {
         return ResponseEntity.ok(userService.whoAmI(userPrincipal));
+    }
+
+    @Operation(summary = "유저 정보 수정", description = "유저의 정보를 수정합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "수정 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = User.class) ) } ),
+            @ApiResponse(responseCode = "400", description = "수정 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    })
+    @PostMapping
+    public ResponseEntity<CommonDto> updateUserInfo(
+            @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @Valid @RequestBody UpdateUserReq updateUserReq
+            ) {
+        return ResponseEntity.ok(userService.updateUser(userPrincipal, updateUserReq));
     }
 }
