@@ -171,7 +171,7 @@ public class DiaryService {
         String result = s3Uploader.uploadFromUrl(imageUrl, "dream");
 
         if (createImageReq.getId() != 0) {
-            Diary diary = diaryRepository.findByIdAndUser(userPrincipal.getId(), user).orElseThrow(InvalidDiaryException::new);
+            Diary diary = diaryRepository.findByIdAndUser(createImageReq.getId(), user).orElseThrow(InvalidDiaryException::new);
             diary.updateImageUrl(result);
         }
 

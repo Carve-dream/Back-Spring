@@ -188,7 +188,7 @@ public class GPTService {
         String result = callChatGptApi(useGptReq.getContent() + ". 이 꿈 해몽해줘.");
 
         if (useGptReq.getId() != 0) {
-            Diary diary = diaryRepository.findByIdAndUser(userPrincipal.getId(), user).orElseThrow(InvalidDiaryException::new);
+            Diary diary = diaryRepository.findByIdAndUser(useGptReq.getId(), user).orElseThrow(InvalidDiaryException::new);
             diary.updateInterpretation(result);
         }
 
