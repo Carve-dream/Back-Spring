@@ -8,13 +8,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Repository
 public interface FortuneRepository extends JpaRepository<Fortune, Long> {
 
     Page<Fortune> findAllByUser(User user, PageRequest pageRequest);
 
-    boolean existsByUserAndCreatedDateBetween(User user, LocalDateTime startOfDay, LocalDateTime endOfDay);
-
     void deleteAllByUser(User user);
+
+    List<Fortune> findByUserAndCreatedDateBetweenOrderByCreatedDateDesc(User user, LocalDateTime startOfDay, LocalDateTime endOfDay);
 }

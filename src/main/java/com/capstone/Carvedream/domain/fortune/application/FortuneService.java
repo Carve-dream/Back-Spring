@@ -3,6 +3,7 @@ package com.capstone.Carvedream.domain.fortune.application;
 import com.capstone.Carvedream.domain.diary.domain.repository.DiaryRepository;
 import com.capstone.Carvedream.domain.fortune.domain.Fortune;
 import com.capstone.Carvedream.domain.fortune.domain.repository.FortuneRepository;
+import com.capstone.Carvedream.domain.fortune.dto.CreateFortuneRes;
 import com.capstone.Carvedream.domain.fortune.dto.FindFortuneRes;
 import com.capstone.Carvedream.domain.user.domain.User;
 import com.capstone.Carvedream.domain.user.domain.repository.UserRepository;
@@ -48,8 +49,14 @@ public class FortuneService {
 
         LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
         LocalDateTime endOfDay = LocalDate.now().atTime(23, 59, 59);
-        if (fortuneRepository.existsByUserAndCreatedDateBetween(user, startOfDay, endOfDay)) {
-            return new CommonDto(false, "오늘의 포춘쿠키는 이미 생성되었습니다.");
+
+        List<Fortune> todaysFortune = fortuneRepository.findByUserAndCreatedDateBetweenOrderByCreatedDateDesc(user, startOfDay, endOfDay);
+        if (!todaysFortune.isEmpty()) {
+            Fortune latestFortune = todaysFortune.get(0);
+
+            String result = latestFortune.getContent();
+
+            return new CommonDto(true, new CreateFortuneRes(result));
         }
 
         List<String> recentInterpretations = diaryRepository.findTop5InterpretationsByUserOrderByIdDesc(user);
