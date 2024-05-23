@@ -5,6 +5,7 @@ import com.capstone.Carvedream.domain.diary.domain.Emotion;
 import com.capstone.Carvedream.domain.diary.domain.repository.DiaryRepository;
 import com.capstone.Carvedream.domain.diary.dto.request.CreateDiaryReq;
 import com.capstone.Carvedream.domain.diary.dto.request.CreateImageReq;
+import com.capstone.Carvedream.domain.diary.dto.request.SaveImageReq;
 import com.capstone.Carvedream.domain.diary.dto.request.UpdateDiaryReq;
 import com.capstone.Carvedream.domain.diary.dto.response.*;
 import com.capstone.Carvedream.domain.diary.exception.InvalidDiaryException;
@@ -21,7 +22,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.deepl.api.*;
@@ -153,7 +153,6 @@ public class DiaryService {
     }
 
     // 이미지화하기
-    @Transactional
     public CommonDto createImage(UserPrincipal userPrincipal, CreateImageReq createImageReq) throws IOException, DeepLException, InterruptedException {
         User user = userRepository.findById(userPrincipal.getId()).orElseThrow(InvalidUserException::new);
         //영어로 번역
@@ -170,12 +169,18 @@ public class DiaryService {
         String imageUrl = openAiService.createImage(createImageRequest).getData().get(0).getUrl();
         String result = s3Uploader.uploadFromUrl(imageUrl, "dream");
 
-        if (createImageReq.getId() != 0) {
-            Diary diary = diaryRepository.findByIdAndUser(createImageReq.getId(), user).orElseThrow(InvalidDiaryException::new);
-            diary.updateImageUrl(result);
-        }
-
         return new CommonDto(true, new UseGptRes(result));
+    }
+
+    //이미지화 저장
+    @Transactional
+    public CommonDto saveImage(UserPrincipal userPrincipal, SaveImageReq saveImageReq) {
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(InvalidUserException::new);
+        Diary diary = diaryRepository.findByIdAndUser(saveImageReq.getId(), user).orElseThrow(InvalidDiaryException::new);
+
+        diary.updateImageUrl(saveImageReq.getUrl());
+
+        return new CommonDto(true, Message.builder().message("이미지가 저장되었습니다.").build());
     }
 
 
