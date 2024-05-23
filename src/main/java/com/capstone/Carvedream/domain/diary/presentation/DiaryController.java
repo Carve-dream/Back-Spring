@@ -2,10 +2,7 @@ package com.capstone.Carvedream.domain.diary.presentation;
 
 import com.capstone.Carvedream.domain.GPT.application.GPTService;
 import com.capstone.Carvedream.domain.diary.application.DiaryService;
-import com.capstone.Carvedream.domain.diary.dto.request.CreateDiaryReq;
-import com.capstone.Carvedream.domain.diary.dto.request.CreateImageReq;
-import com.capstone.Carvedream.domain.diary.dto.request.UpdateDiaryReq;
-import com.capstone.Carvedream.domain.diary.dto.request.UseGptReq;
+import com.capstone.Carvedream.domain.diary.dto.request.*;
 import com.capstone.Carvedream.domain.diary.dto.response.*;
 import com.capstone.Carvedream.global.config.security.token.CurrentUser;
 import com.capstone.Carvedream.global.config.security.token.UserPrincipal;
@@ -131,6 +128,19 @@ public class DiaryController {
             @Valid @RequestBody CreateImageReq createImageReq
     ) throws IOException, DeepLException, InterruptedException {
         return ResponseEntity.ok(diaryService.createImage(userPrincipal, createImageReq));
+    }
+
+    @Operation(summary = "이미지 저장", description = "이미지 url을 다이어리에 저장합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "저장 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = UseGptRes.class) ) } ),
+            @ApiResponse(responseCode = "400", description = "저장 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    })
+    @PatchMapping("/image")
+    public ResponseEntity<CommonDto> saveImage (
+            @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @Valid @RequestBody SaveImageReq saveImageReq
+            ) {
+        return ResponseEntity.ok(diaryService.saveImage(userPrincipal, saveImageReq));
     }
 
     // 태그 검색
