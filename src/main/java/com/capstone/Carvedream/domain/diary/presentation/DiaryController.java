@@ -1,6 +1,7 @@
 package com.capstone.Carvedream.domain.diary.presentation;
 
 import com.capstone.Carvedream.domain.GPT.application.GPTService;
+import com.capstone.Carvedream.domain.GPT.dto.request.SaveInterpretationReq;
 import com.capstone.Carvedream.domain.diary.application.DiaryService;
 import com.capstone.Carvedream.domain.diary.dto.request.*;
 import com.capstone.Carvedream.domain.diary.dto.response.*;
@@ -104,7 +105,7 @@ public class DiaryController {
         return ResponseEntity.ok(diaryService.findAllDiary(userPrincipal, page));
     }
 
-    @Operation(summary = "해몽하기", description = "문자열에 대한 해몽 결과를 보여줍니다. (작성한 일기가 없다면 id는 0으로)")
+    @Operation(summary = "해몽하기", description = "문자열에 대한 해몽 결과를 보여줍니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "해몽 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = UseGptRes.class) ) } ),
             @ApiResponse(responseCode = "400", description = "해몽 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
@@ -117,7 +118,20 @@ public class DiaryController {
         return ResponseEntity.ok(gptService.interpret(userPrincipal, useGptReq));
     }
 
-    @Operation(summary = "이미지화하기", description = "문자열에 대한 이미지url 결과를 보여줍니다. (작성한 일기가 없다면 id는 0으로)")
+    @Operation(summary = "해몽 저장", description = "해몽 내용을 다이어리에 저장합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "저장 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Message.class) ) } ),
+            @ApiResponse(responseCode = "400", description = "저장 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    })
+    @PatchMapping("/interpretation")
+    public ResponseEntity<CommonDto> saveInterpretation (
+            @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @Valid @RequestBody SaveInterpretationReq saveInterpretationReq
+            ) {
+        return ResponseEntity.ok(gptService.saveInterpretation(userPrincipal, saveInterpretationReq));
+    }
+
+    @Operation(summary = "이미지화하기", description = "문자열에 대한 이미지url 결과를 보여줍니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "이미지화 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = UseGptRes.class) ) } ),
             @ApiResponse(responseCode = "400", description = "이미지화 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
@@ -132,7 +146,7 @@ public class DiaryController {
 
     @Operation(summary = "이미지 저장", description = "이미지 url을 다이어리에 저장합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "저장 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = UseGptRes.class) ) } ),
+            @ApiResponse(responseCode = "200", description = "저장 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Message.class) ) } ),
             @ApiResponse(responseCode = "400", description = "저장 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
     })
     @PatchMapping("/image")
