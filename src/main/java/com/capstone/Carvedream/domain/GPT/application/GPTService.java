@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import com.capstone.Carvedream.domain.GPT.dto.request.ChatReq;
+import com.capstone.Carvedream.domain.GPT.dto.request.SaveInterpretationReq;
 import com.capstone.Carvedream.domain.GPT.dto.response.ChatRes;
 import com.capstone.Carvedream.domain.GPT.exception.InvalidChatException;
 import com.capstone.Carvedream.domain.diary.domain.Diary;
@@ -18,6 +19,7 @@ import com.capstone.Carvedream.domain.user.domain.repository.UserRepository;
 import com.capstone.Carvedream.domain.user.exception.InvalidUserException;
 import com.capstone.Carvedream.global.config.security.token.UserPrincipal;
 import com.capstone.Carvedream.global.payload.CommonDto;
+import com.capstone.Carvedream.global.payload.Message;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -181,18 +183,23 @@ public class GPTService {
     }
 
     // 해몽하기
-    @Transactional
     public CommonDto interpret(UserPrincipal userPrincipal, UseGptReq useGptReq) {
-        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(InvalidUserException::new);
+        userRepository.findById(userPrincipal.getId()).orElseThrow(InvalidUserException::new);
 
         String result = callChatGptApi(useGptReq.getContent() + ". 이 꿈 해몽해줘.");
 
-        if (useGptReq.getId() != 0) {
-            Diary diary = diaryRepository.findByIdAndUser(useGptReq.getId(), user).orElseThrow(InvalidDiaryException::new);
-            diary.updateInterpretation(result);
-        }
-
         return new CommonDto(true, new UseGptRes(result));
+    }
+
+    // 해몽 저장
+    @Transactional
+    public CommonDto saveInterpretation(UserPrincipal userPrincipal, SaveInterpretationReq saveInterpretationReq) {
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(InvalidUserException::new);
+        Diary diary = diaryRepository.findByIdAndUser(saveInterpretationReq.getId(), user).orElseThrow(InvalidDiaryException::new);
+
+        diary.updateInterpretation(saveInterpretationReq.getContent());
+
+        return new CommonDto(true, Message.builder().message("해몽이 저장되었습니다.").build());
     }
 
     // 해몽 GPT API 호출해서 응답 반환 (이전 대화 기억X)
