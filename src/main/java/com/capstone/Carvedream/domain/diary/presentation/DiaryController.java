@@ -22,9 +22,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
 
 @Tag(name = "Diary", description = "꿈 일기 API")
 @RestController
@@ -169,6 +169,20 @@ public class DiaryController {
             @RequestParam(value = "tag") String tag
     ) {
         return ResponseEntity.ok(diaryService.searchTag(userPrincipal, tag));
+    }
+
+    // 날짜 검색
+    @Operation(summary = "날짜 검색", description = "해당 날짜에 작성한 일기를 모두 불러옵니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = FindDiaryRes.class) ) } ),
+            @ApiResponse(responseCode = "400", description = "조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    })
+    @GetMapping("/searchByDate")
+    public ResponseEntity<CommonDto> getDiaryByDate (
+            @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @RequestParam(value = "date") LocalDate date
+    ) {
+        return ResponseEntity.ok(diaryService.getDiaryByDate(userPrincipal, date));
     }
 
 }
