@@ -256,4 +256,28 @@ public class DiaryService {
         return new CommonDto(true, findDiaryRes);
     }
 
+    // 날짜 검색
+    public CommonDto getDiaryByDate(UserPrincipal userPrincipal, LocalDate date) {
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(InvalidUserException::new);
+
+        List<Diary> diaryList = diaryRepository.findAllByUserAndDate(user, date);
+
+        List<FindDiaryRes> findDiaryRes = diaryList.stream().map(
+                        diary -> FindDiaryRes.builder()
+                                .id(diary.getId())
+                                .title(diary.getTitle())
+                                .content(diary.getContent())
+                                .date(diary.getDate())
+                                .emotion(diary.getEmotion())
+                                .image_url(diary.getImage_url())
+                                .end_sleep(diary.getEnd_sleep())
+                                .start_sleep(diary.getStart_sleep())
+                                .tags(diary.getTags())
+                                .interpretation(diary.getInterpretation())
+                                .build())
+                .toList();
+
+        return new CommonDto(true, findDiaryRes);
+    }
+
 }
