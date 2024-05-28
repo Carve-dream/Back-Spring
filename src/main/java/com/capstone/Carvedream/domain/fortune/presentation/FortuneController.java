@@ -39,16 +39,17 @@ public class FortuneController {
     }
 
     //포춘쿠키 조회(모두)
-    @Operation(summary = "모든 포춘쿠키 조회", description = "유저에 해당하는 모든 포춘쿠키를 조회합니다. (페이징은 0부터 시작)")
+    @Operation(summary = "월별 포춘쿠키 조회", description = "월에 해당하는 유저의 포춘쿠키를 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = FindFortuneRes.class) ) } ),
             @ApiResponse(responseCode = "400", description = "조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
     })
     @GetMapping
-    public ResponseEntity<CommonDto> findAllFortune (
+    public ResponseEntity<CommonDto> findFortuneByMonth (
             @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
-            @RequestParam(name = "page") Integer page
+            @RequestParam(name = "year") Integer year,
+            @RequestParam(name = "month") Integer month
     ) {
-        return ResponseEntity.ok(fortuneService.findAllFortune(userPrincipal, page));
+        return ResponseEntity.ok(fortuneService.findFortune(userPrincipal, year, month));
     }
 }

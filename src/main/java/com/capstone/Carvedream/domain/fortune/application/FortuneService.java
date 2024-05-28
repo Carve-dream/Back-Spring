@@ -1,7 +1,5 @@
 package com.capstone.Carvedream.domain.fortune.application;
 
-import com.capstone.Carvedream.domain.diary.domain.Diary;
-import com.capstone.Carvedream.domain.diary.dto.response.FindDiaryRes;
 import com.capstone.Carvedream.domain.diary.dto.response.UseGptRes;
 import com.capstone.Carvedream.domain.fortune.domain.Fortune;
 import com.capstone.Carvedream.domain.fortune.domain.repository.FortuneRepository;
@@ -12,12 +10,11 @@ import com.capstone.Carvedream.domain.user.exception.InvalidUserException;
 import com.capstone.Carvedream.global.config.security.token.UserPrincipal;
 import com.capstone.Carvedream.global.payload.CommonDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -47,11 +44,14 @@ public class FortuneService {
         return new CommonDto(true, new UseGptRes(result));
     }
 
-    // 유저의 모든 포춘쿠키 조회
-    public CommonDto findAllFortune(UserPrincipal userPrincipal, Integer page) {
+    // 유저의 포춘쿠키 월별 조회
+    public CommonDto findFortune(UserPrincipal userPrincipal, int year, int month) {
         User user = userRepository.findById(userPrincipal.getId()).orElseThrow(InvalidUserException::new);
+        YearMonth yearMonth = YearMonth.of(year, month);
+        LocalDateTime start = yearMonth.atDay(1).atStartOfDay();
+        LocalDateTime end = yearMonth.atEndOfMonth().atTime(23, 59, 59);
 
-        Page<Fortune> fortunePage = fortuneRepository.findAllByUser(user, PageRequest.of(page, 10));
+        List<Fortune> fortunePage = fortuneRepository.findAllByUserAndCreatedDateBetween(user, start, end);
 
         List<FindFortuneRes> findFortuneRes = fortunePage.stream().map(
                 fortune -> FindFortuneRes.builder()
