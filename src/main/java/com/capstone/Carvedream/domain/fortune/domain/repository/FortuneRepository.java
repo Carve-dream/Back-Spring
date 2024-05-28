@@ -14,4 +14,7 @@ public interface FortuneRepository extends JpaRepository<Fortune, Long> {
     void deleteAllByUser(User user);
 
     List<Fortune> findAllByUserAndCreatedDateBetween(User user, LocalDateTime start, LocalDateTime end);
+
+    List<Fortune> findByUserAndCreatedDateBetweenOrderByCreatedDateDesc(User user, LocalDateTime startOfDay, LocalDateTime endOfDay);
+
 }

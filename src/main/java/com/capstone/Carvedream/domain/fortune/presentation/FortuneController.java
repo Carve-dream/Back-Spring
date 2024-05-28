@@ -1,7 +1,7 @@
 package com.capstone.Carvedream.domain.fortune.presentation;
 
-import com.capstone.Carvedream.domain.diary.dto.response.UseGptRes;
 import com.capstone.Carvedream.domain.fortune.application.FortuneService;
+import com.capstone.Carvedream.domain.fortune.dto.CreateFortuneRes;
 import com.capstone.Carvedream.domain.fortune.dto.FindFortuneRes;
 import com.capstone.Carvedream.global.config.security.token.CurrentUser;
 import com.capstone.Carvedream.global.config.security.token.UserPrincipal;
@@ -28,7 +28,7 @@ public class FortuneController {
 
     @Operation(summary = "포춘쿠키 생성", description = "나의 데이터를 통해 포춘쿠키 하나를 생성합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "생성 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = UseGptRes.class) ) } ),
+            @ApiResponse(responseCode = "200", description = "생성 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = CreateFortuneRes.class) ) } ),
             @ApiResponse(responseCode = "400", description = "생성 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
     })
     @PostMapping
