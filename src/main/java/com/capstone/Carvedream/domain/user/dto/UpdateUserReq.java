@@ -1,5 +1,6 @@
 package com.capstone.Carvedream.domain.user.dto;
 
+import com.capstone.Carvedream.domain.diary.domain.Emotion;
 import com.capstone.Carvedream.domain.user.domain.Gender;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -18,5 +19,8 @@ public class UpdateUserReq {
 
     @Schema(description = "생년월일", example = "2024-05-20")
     private LocalDate birthDate;
+
+    @Schema(description = "프로필이모지", example = "JOY")
+    private Emotion imageUrl;
 
 }

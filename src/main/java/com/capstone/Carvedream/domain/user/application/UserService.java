@@ -28,7 +28,7 @@ public class UserService {
     public CommonDto updateUser(UserPrincipal userPrincipal, UpdateUserReq updateUserReq) {
         User user = userRepository.findById(userPrincipal.getId()).orElseThrow(InvalidUserException::new);
 
-        user.updateUser(updateUserReq.getName(),updateUserReq.getGender(), updateUserReq.getBirthDate());
+        user.updateUser(updateUserReq.getName(),updateUserReq.getGender(), updateUserReq.getBirthDate(), updateUserReq.getImageUrl());
 
         return CommonDto.builder().check(true).information(user).build();
     }
