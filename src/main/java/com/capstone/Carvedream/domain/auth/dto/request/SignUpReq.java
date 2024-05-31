@@ -1,5 +1,6 @@
 package com.capstone.Carvedream.domain.auth.dto.request;
 
+import com.capstone.Carvedream.domain.diary.domain.Emotion;
 import com.capstone.Carvedream.domain.user.domain.Gender;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
@@ -29,4 +30,7 @@ public class SignUpReq {
 
     @Schema(description = "생년월일", example = "2001-01-01")
     private LocalDate birthDate;
+
+    @Schema(description = "프로필이모지", example = "JOY")
+    private Emotion imageUrl;
 }

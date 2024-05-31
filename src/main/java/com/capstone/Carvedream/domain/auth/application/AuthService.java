@@ -89,6 +89,7 @@ public class AuthService {
                         .birthDate(signUpRequest.getBirthDate())
                         .gender(signUpRequest.getGender())
                         .threadId(createThread())
+                        .imageUrl(signUpRequest.getImageUrl())
                         .build();
 
         userRepository.save(user);
