@@ -1,6 +1,5 @@
 package com.capstone.Carvedream.domain.fortune.application;
 
-import com.capstone.Carvedream.domain.diary.dto.response.UseGptRes;
 import com.capstone.Carvedream.domain.diary.domain.repository.DiaryRepository;
 import com.capstone.Carvedream.domain.fortune.domain.Fortune;
 import com.capstone.Carvedream.domain.fortune.domain.repository.FortuneRepository;
@@ -20,10 +19,6 @@ import java.time.YearMonth;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -31,7 +26,6 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -84,9 +78,15 @@ public class FortuneService {
 
     // GPT에게 요청
     private String getFortuneFromInterpretations(List<String> recentInterpretations) {
-        String prompt = "다음 해몽 기록을 바탕으로 사용자에게 한 문장으로 간단하게 조언 해주세요:\n";
-        for (String interpretation : recentInterpretations) {
-            prompt += interpretation + "\n";
+        String prompt = "";
+
+        if (recentInterpretations.isEmpty()) {
+            prompt = "오늘 하루를 위한 조언이나 좋은 글귀 한마디 해주세요:\n";
+        } else {
+            prompt = "다음 해몽 기록을 바탕으로 사용자에게 한 문장으로 간단하게 조언 해주세요:\n";
+            for (String interpretation : recentInterpretations) {
+                prompt += interpretation + "\n";
+            }
         }
 
         return callChatGptApi(prompt);
