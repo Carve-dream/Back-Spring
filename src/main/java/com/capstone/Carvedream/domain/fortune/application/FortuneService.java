@@ -130,10 +130,17 @@ public class FortuneService {
             JSONObject message = new JSONObject();
             message.put("role", "user");
             message.put("content", prompt);
+
+            JSONObject system = new JSONObject();
+            system.put("role", "system");
+            system.put("content", "당신은 포춘쿠키에 담을 메시지를 만들어야 합니다. 모든 응답은 한 문장으로 합니다.");
+
+            messages.put(system);
             messages.put(message);
 
             requestBody.put("messages", messages);
             requestBody.put("temperature", 0.7);
+
 
             OutputStream outputStream = conn.getOutputStream();
             outputStream.write(requestBody.toString().getBytes());
